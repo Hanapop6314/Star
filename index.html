@@ -1,0 +1,1370 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#241B5E" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="ดาวของบ้านเรา" />
+<title>ภารกิจดาวของบ้านเรา</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Chonburi&family=Mali:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+
+.fq-root{--grape:#241B5E;--grape-deep:#170F3F;--gold:#FFD028;--coral:#FF6B8A;--mint:#3DE0B0;--sky:#56C7FF;--cream:#FFF6E5;--steel:#0F2C3F;
+  font-family:'Mali','Noto Sans Thai',system-ui,sans-serif;
+  background:radial-gradient(120% 80% at 50% 0%,#3A2C86 0%,var(--grape) 45%,var(--grape-deep) 100%);
+  min-height:100vh;padding:18px 14px calc(40px + env(safe-area-inset-bottom));color:var(--cream);-webkit-font-smoothing:antialiased;}
+.fq-shell{max-width:600px;margin:0 auto;}
+.fq-root button{font-family:inherit;cursor:pointer;border:none;}
+.fq-root button:focus-visible,.fq-root input:focus-visible,.fq-root select:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+.fq-loading{display:flex;align-items:center;justify-content:center;gap:10px;min-height:60vh;font-size:17px;opacity:.85;}
+.fq-warn{background:rgba(255,107,138,.18);border:1px solid rgba(255,107,138,.5);border-radius:14px;padding:9px 12px;font-size:13px;margin:0 0 14px;}
+.fq-signin{max-width:380px;margin:0 auto;padding-top:14vh;display:flex;flex-direction:column;gap:12px;text-align:center;align-items:stretch;}
+.fq-signin-ic{align-self:center;color:var(--gold);}
+.fq-signin-sub{display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;margin:0;opacity:.85;}
+.fq-signin-hint{font-size:12px;opacity:.6;margin:4px 0 0;}
+.fq-signin-err{font-size:13px;color:#FFB3C3;margin:0;}
+.fq-signin .fq-field>span,.fq-signin .fq-input{text-align:left;}
+.fq-signin .fq-field>span{color:var(--cream);opacity:.8;}
+.fq-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.fq-title{font-family:'Chonburi',serif;font-size:23px;margin:0;font-weight:400;line-height:1.3;}
+.fq-sub{margin:3px 0 0;font-size:12px;opacity:.7;word-break:break-all;}
+.fq-top-acts{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.fq-top-ic{opacity:.5;}
+.fq-signout{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.1);color:var(--cream);display:grid;place-items:center;}
+.fq-pool{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.14);border-radius:26px;padding:16px;margin-bottom:16px;}
+.fq-pool-head{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.fq-count{display:flex;align-items:center;gap:6px;}
+.fq-count-star{filter:drop-shadow(0 0 10px rgba(255,208,40,.65));}
+.fq-count-num{font-family:'Chonburi',serif;font-size:42px;line-height:1;color:var(--gold);}
+.fq-count-goal{font-size:16px;opacity:.65;padding-bottom:5px;}
+.fq-pool-msg{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--mint);text-align:right;max-width:50%;}
+.fq-track{position:relative;height:22px;border-radius:999px;background:rgba(0,0,0,.3);overflow:hidden;}
+.fq-fill{position:absolute;inset:0 auto 0 0;border-radius:999px;background:linear-gradient(90deg,var(--coral),var(--gold));
+  transition:width .7s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 0 18px rgba(255,208,40,.55);}
+.fq-reward{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;background:rgba(255,255,255,.09);border-radius:14px;padding:9px 12px;}
+.fq-reward svg{color:var(--gold);flex-shrink:0;}
+.fq-poolnote{margin:8px 0 0;font-size:11px;opacity:.55;text-align:center;}
+.fq-people{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+@media(min-width:560px){.fq-people{grid-template-columns:repeat(3,1fr);}}
+.fq-person{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:rgba(255,255,255,.09);
+  color:var(--cream);border-radius:18px;padding:11px 12px;min-height:72px;text-align:left;border:2px solid transparent;transition:background .15s;}
+.fq-person.on{background:var(--cream);color:var(--grape);}
+.fq-person.staff{border-radius:10px;border-color:rgba(61,224,176,.45);}
+.fq-person.staff.on{background:#E8F3F1;color:var(--steel);}
+.fq-person-ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;color:#fff;margin-bottom:2px;background:#7A5CE0;}
+.fq-person.staff .fq-person-ic{border-radius:7px;background:#12A87B;}
+.hue-coral .fq-person-ic,.fq-panel.hue-coral .fq-card-ic{background:#F0436F;}
+.hue-gold .fq-person-ic,.fq-panel.hue-gold .fq-card-ic{background:#D99400;}
+.hue-sky .fq-person-ic,.fq-panel.hue-sky .fq-card-ic{background:#2FA8E8;}
+.hue-grape .fq-person-ic,.fq-panel.hue-grape .fq-card-ic{background:#7A5CE0;}
+.hue-teal .fq-person-ic{background:#12A87B;}
+.fq-person-name{font-size:14px;font-weight:700;}
+.fq-person-stars{font-size:11px;opacity:.72;}
+.fq-person-lock{position:absolute;top:10px;right:10px;opacity:.55;}
+.fq-badge{position:absolute;top:-6px;right:-4px;background:var(--coral);color:#fff;font-size:10px;min-width:19px;height:19px;border-radius:10px;
+  display:grid;place-items:center;padding:0 5px;font-weight:700;}
+.fq-panel{background:var(--cream);color:var(--grape);border-radius:26px;padding:18px 16px 20px;}
+.fq-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.fq-panel-name{font-family:'Chonburi',serif;font-size:22px;margin:0;font-weight:400;}
+.fq-panel-note{margin:2px 0 0;font-size:12px;opacity:.6;}
+.fq-panel-score{display:flex;align-items:baseline;gap:2px;}
+.fq-panel-num{font-family:'Chonburi',serif;font-size:30px;color:#C99400;}
+.fq-panel-den{font-size:14px;opacity:.6;}
+.fq-mini-track{height:14px;border-radius:999px;background:rgba(36,27,94,.12);overflow:hidden;margin:12px 0 8px;}
+.fq-mini-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#FF8FA8,#FFC400);transition:width .6s cubic-bezier(.2,.9,.3,1.2);}
+.fq-panel-left{margin:0 0 16px;font-size:13px;font-weight:600;opacity:.8;}
+.fq-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.fq-tab{flex:1 1 auto;min-width:96px;min-height:44px;border-radius:12px;background:rgba(36,27,94,.07);color:var(--grape);font-size:13px;font-weight:600;padding:0 8px;}
+.fq-tab.on{background:var(--grape);color:var(--cream);}
+.fq-tasks{display:grid;grid-template-columns:1fr;gap:12px;}
+@media(min-width:430px){.fq-tasks{grid-template-columns:1fr 1fr;}}
+.fq-card{background:#fff;border-radius:20px;padding:14px;box-shadow:0 3px 0 rgba(36,27,94,.14);display:flex;flex-direction:column;}
+.fq-card.done{opacity:.6;}
+.fq-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.fq-card-ic{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;color:#fff;background:#7A5CE0;}
+.fq-card-stars{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:#C99400;}
+.fq-card-title{font-size:18px;font-weight:700;margin:0;line-height:1.35;}
+.fq-card-where{margin:2px 0 12px;font-size:12px;opacity:.55;}
+.fq-send,.fq-finish{margin-top:auto;width:100%;min-height:52px;border-radius:16px;font-size:16px;font-weight:700;color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .12s,box-shadow .12s;}
+.fq-send{background:linear-gradient(160deg,#FF7E9B,#F0436F);box-shadow:0 4px 0 #C7325A;}
+.fq-send:active{transform:translateY(4px);box-shadow:0 0 0 #C7325A;}
+.fq-finish{background:linear-gradient(160deg,#5BF0C0,#1FCB96);color:#04533B;box-shadow:0 4px 0 #109C72;}
+.fq-finish:active{transform:translateY(4px);box-shadow:0 0 0 #109C72;}
+.fq-waitwrap{margin-top:auto;display:flex;align-items:center;gap:8px;}
+.fq-wait{flex:1;min-height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:700;
+  color:#8A6B00;background:#FFE9A8;border:2px dashed #E8B923;}
+.fq-undo{min-height:52px;padding:0 12px;border-radius:16px;background:rgba(36,27,94,.08);color:var(--grape);font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px;}
+.fq-done{margin-top:auto;min-height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:16px;font-weight:700;color:#0E7A59;background:#C7F5E4;}
+.fq-panel.big .fq-card-title{font-size:24px;} .fq-panel.big .fq-card-where{font-size:15px;opacity:.7;}
+.fq-panel.big .fq-card-stars{font-size:16px;} .fq-panel.big .fq-finish{min-height:66px;font-size:21px;border-radius:18px;}
+.fq-panel.big .fq-done{min-height:66px;font-size:20px;} .fq-panel.big .fq-card-ic{width:54px;height:54px;}
+.fq-panel.big .fq-tasks{grid-template-columns:1fr;} .fq-panel.big .fq-panel-left{font-size:16px;}
+.fq-review{margin-top:4px;}
+.fq-empty{font-size:14px;opacity:.65;margin:0;padding:14px;border:2px dashed rgba(36,27,94,.2);border-radius:16px;}
+.fq-queue{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.fq-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border-radius:18px;padding:12px;box-shadow:0 2px 0 rgba(36,27,94,.12);}
+.fq-row.rate{border-radius:12px;align-items:flex-start;}
+.fq-row-ic{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:#FFE1E8;color:#D33660;flex-shrink:0;}
+.fq-row-ic.staff{border-radius:8px;background:#DFF1EB;color:#0C7A5A;}
+.fq-row-text{display:flex;flex-direction:column;flex:1;min-width:130px;}
+.fq-row-title{font-size:17px;font-weight:700;}
+.fq-row-sub{font-size:12px;opacity:.62;}
+.fq-row-acts{display:flex;gap:8px;align-items:center;margin-left:auto;}
+.fq-back{min-height:48px;padding:0 14px;border-radius:14px;background:rgba(36,27,94,.08);color:var(--grape);font-size:14px;font-weight:600;}
+.fq-approve{min-height:48px;padding:0 18px;border-radius:14px;display:flex;align-items:center;gap:6px;font-size:16px;font-weight:700;color:#04533B;
+  background:linear-gradient(160deg,#5BF0C0,#1FCB96);box-shadow:0 4px 0 #109C72;transition:transform .12s,box-shadow .12s;}
+.fq-approve:active{transform:translateY(4px);box-shadow:0 0 0 #109C72;}
+.fq-h3{font-family:'Chonburi',serif;font-size:17px;font-weight:400;margin:22px 0 10px;display:flex;align-items:center;gap:7px;}
+.fq-history{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.fq-history li{display:flex;align-items:center;gap:8px;font-size:13px;padding:8px 4px;border-bottom:1px solid rgba(36,27,94,.1);}
+.fq-hist-ic{color:#1FA97F;display:flex;flex-shrink:0;} .fq-hist-ic.bad{color:#D9761F;}
+.fq-hist-who{font-weight:700;min-width:74px;}
+.fq-hist-title{opacity:.75;flex:1;}
+.fq-hist-star{display:flex;align-items:center;gap:3px;font-weight:700;color:#C99400;}
+.fq-reset{width:100%;min-height:48px;border-radius:14px;background:rgba(36,27,94,.07);color:var(--grape);font-size:14px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;}
+.fq-ratehead{display:flex;align-items:baseline;gap:10px;background:#EAF4F1;border-radius:12px;padding:12px 14px;margin-bottom:12px;}
+.fq-ratehead-num{font-size:28px;font-weight:700;color:#0C7A5A;font-family:'IBM Plex Sans Thai',sans-serif;}
+.fq-ratehead-txt{font-size:12px;opacity:.75;}
+.fq-rate{display:flex;flex-direction:column;gap:4px;width:100%;margin-top:6px;}
+.fq-rate-label{font-size:12px;opacity:.6;}
+.fq-rate-stars{display:flex;gap:2px;}
+.fq-rate-btn{min-width:48px;min-height:48px;display:grid;place-items:center;background:transparent;color:#C99400;border-radius:10px;}
+.fq-rate-btn.hot{color:#E8A400;} .fq-rate-btn:active{transform:scale(.92);}
+.fq-wage{background:#F4F7F9;border:1px solid #DDE5EC;border-radius:12px;padding:14px;font-family:'IBM Plex Sans Thai',sans-serif;color:var(--steel);}
+.fq-wage.plain{margin-top:18px;}
+.fq-wage-line{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px dashed #DDE5EC;}
+.fq-wage-line span:last-child{font-weight:600;white-space:nowrap;}
+.fq-wage-line .paid{color:#0C7A5A;} .fq-wage-line .pending{color:#C36A00;}
+.fq-wage-total{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:12px 0 10px;}
+.fq-wage-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.fq-pill{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:8px 12px;border-radius:8px;}
+.fq-pill.pending{background:#FFEFD2;color:#8A5A00;} .fq-pill.paid{background:#D8F2E8;color:#0C6A50;}
+.fq-pay{margin-left:auto;min-height:48px;padding:0 16px;border-radius:10px;background:var(--steel);color:#fff;font-size:14px;font-weight:600;}
+.fq-pay.undo{background:#E7EDF2;color:var(--steel);}
+.fq-staff{background:#fff;color:var(--steel);border-radius:14px;padding:18px 16px 20px;font-family:'IBM Plex Sans Thai','Noto Sans Thai',sans-serif;border-top:5px solid #12A87B;}
+.fq-staff-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.fq-staff-name{font-size:21px;margin:0;font-weight:700;}
+.fq-staff-note{margin:2px 0 0;font-size:12px;opacity:.6;}
+.fq-staff-chip{font-size:11px;background:#EAF4F1;color:#0C7A5A;padding:6px 10px;border-radius:6px;font-weight:600;text-align:center;flex-shrink:0;}
+.fq-gauge-row{display:flex;align-items:center;gap:14px;background:#F4F7F9;border:1px solid #DDE5EC;border-radius:12px;padding:14px;}
+.fq-gauge{width:118px;height:118px;flex-shrink:0;}
+.fq-gauge-arc{transition:stroke-dasharray .8s cubic-bezier(.2,.8,.3,1);}
+.fq-gauge-num{font-size:24px;font-weight:700;fill:#0F2C3F;font-family:'IBM Plex Sans Thai',sans-serif;}
+.fq-gauge-cap{font-size:10px;fill:#6B7C89;font-family:'IBM Plex Sans Thai',sans-serif;}
+.fq-gauge-info{flex:1;min-width:130px;}
+.fq-gauge-label{margin:0 0 4px;font-size:14px;font-weight:700;}
+.fq-gauge-detail{margin:0 0 8px;font-size:12px;opacity:.7;}
+.fq-gauge-status{display:flex;align-items:center;gap:6px;margin:0;font-size:12px;font-weight:600;}
+.fq-gauge-status.ok{color:#0C7A5A;} .fq-gauge-status.low{color:#C36A00;}
+.fq-staff-h3{font-size:15px;font-weight:700;margin:20px 0 10px;}
+.fq-check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.fq-check-item{display:flex;gap:12px;align-items:flex-start;border:1px solid #DDE5EC;border-radius:12px;padding:12px;background:#fff;}
+.fq-check-item.pending{background:#FFFBF0;border-color:#F0D89B;}
+.fq-check-item.rated,.fq-check-item.done{background:#F3FAF7;border-color:#BFE6D7;}
+.fq-check-btn{width:56px;height:56px;border-radius:10px;display:grid;place-items:center;background:#F4F7F9;color:#0F2C3F;flex-shrink:0;transition:transform .1s;}
+.fq-check-btn:active{transform:scale(.94);}
+.fq-check-item.pending .fq-check-btn{background:#FBEFD2;color:#B07B00;}
+.fq-check-item.rated .fq-check-btn{background:#DFF1EB;color:#0C7A5A;}
+.fq-check-btn:disabled{cursor:default;}
+.fq-check-body{flex:1;min-width:0;}
+.fq-check-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.fq-check-ic{color:#6B7C89;flex-shrink:0;}
+.fq-check-title{font-size:16px;font-weight:700;}
+.fq-flag{font-size:10px;background:#FFE0E0;color:#B3261E;padding:3px 7px;border-radius:5px;font-weight:700;}
+.fq-check-where{margin:3px 0 0;font-size:12px;opacity:.62;}
+.fq-check-state{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;font-weight:600;color:#B07B00;flex-wrap:wrap;}
+.fq-check-state.done{color:#0C7A5A;}
+.fq-check-undo{display:flex;align-items:center;gap:4px;min-height:36px;padding:0 10px;border-radius:8px;background:#F1F4F7;color:#0F2C3F;font-size:12px;font-weight:600;margin-left:4px;}
+.fq-segment{display:flex;gap:8px;margin-bottom:14px;}
+.fq-seg{flex:1;min-height:46px;border-radius:12px;background:rgba(36,27,94,.07);color:var(--grape);font-size:13px;font-weight:600;padding:0 8px;}
+.fq-seg.on{background:var(--grape);color:var(--cream);}
+.fq-statcard{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 0 rgba(36,27,94,.12);}
+.fq-stat-label{margin:0;font-size:12px;opacity:.6;}
+.fq-stat-num{margin:4px 0 2px;font-family:'Chonburi',serif;font-size:34px;color:#C99400;line-height:1;}
+.fq-stat-num span{font-size:14px;color:var(--grape);opacity:.6;font-family:'Mali',sans-serif;}
+.fq-stat-prev{margin:0;font-size:12px;opacity:.6;}
+.fq-growth{display:flex;align-items:center;gap:5px;font-size:17px;font-weight:700;padding:10px 14px;border-radius:12px;}
+.fq-growth.up{background:#D8F2E8;color:#0C6A50;} .fq-growth.down{background:#FFE3E3;color:#B3261E;}
+.fq-bars{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;}
+.fq-barrow{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 0 rgba(36,27,94,.1);}
+.fq-barhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.fq-barname{font-size:15px;font-weight:700;}
+.fq-bardelta{font-size:12px;font-weight:700;}
+.fq-bardelta.up{color:#0C7A5A;} .fq-bardelta.down{color:#B3261E;}
+.fq-bar{display:flex;align-items:center;gap:8px;height:22px;margin-bottom:5px;}
+.fq-bar span{height:100%;border-radius:6px;background:linear-gradient(90deg,#FF8FA8,#FFC400);min-width:3px;transition:width .5s;}
+.fq-bar.pre span{background:rgba(36,27,94,.22);}
+.fq-bar b{font-size:12px;font-weight:700;opacity:.7;}
+.fq-legend{display:flex;align-items:center;gap:6px;font-size:12px;opacity:.7;margin:12px 0 0;}
+.fq-legend i{width:14px;height:10px;border-radius:3px;display:inline-block;}
+.fq-legend i.cur{background:linear-gradient(90deg,#FF8FA8,#FFC400);} .fq-legend i.pre{background:rgba(36,27,94,.22);margin-left:10px;}
+.fq-form{background:#fff;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 0 rgba(36,27,94,.12);}
+.fq-form.inner{box-shadow:none;padding:0;background:transparent;width:100%;}
+.fq-field{display:flex;flex-direction:column;gap:4px;flex:1;}
+.fq-field>span{font-size:12px;font-weight:600;opacity:.7;}
+.fq-field-row{display:flex;gap:10px;align-items:flex-end;}
+.fq-input{min-height:48px;border-radius:12px;border:2px solid rgba(36,27,94,.14);background:#FBFAFF;padding:0 12px;font-size:16px;
+  font-family:inherit;color:var(--grape);width:100%;}
+.fq-primary{min-height:50px;border-radius:14px;background:var(--grape);color:var(--cream);font-size:15px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:6px;flex:1;padding:0 14px;}
+.fq-ghost{min-height:50px;border-radius:14px;background:rgba(36,27,94,.08);color:var(--grape);font-size:15px;font-weight:600;padding:0 18px;}
+.fq-signin .fq-ghost{background:rgba(255,255,255,.12);color:var(--cream);}
+.fq-manage{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.fq-mgroup{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 0 rgba(36,27,94,.1);}
+.fq-mgroup-head{margin:0 0 8px;font-size:13px;font-weight:700;opacity:.75;}
+.fq-mrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px solid rgba(36,27,94,.08);}
+.fq-mrow-title{font-size:15px;font-weight:600;}
+.fq-mrow-sub{font-size:12px;opacity:.6;flex:1;}
+.fq-icon-btn{min-width:44px;min-height:44px;border-radius:12px;background:rgba(36,27,94,.07);color:var(--grape);display:grid;place-items:center;font-size:13px;font-weight:600;}
+.fq-icon-btn.danger{background:#FFE7E7;color:#B3261E;} .fq-icon-btn.wide{padding:0 12px;}
+.fq-user{background:#fff;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 2px 0 rgba(36,27,94,.1);}
+.fq-user-main{display:flex;flex-direction:column;gap:3px;flex:1;min-width:150px;}
+.fq-user-name{font-size:16px;font-weight:700;}
+.fq-user-sub{font-size:12px;opacity:.6;}
+.fq-roletag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;align-self:flex-start;}
+.fq-roletag.admin{background:#E4E0FF;color:#4B34B5;} .fq-roletag.supervised{background:#FFE1E8;color:#D33660;}
+.fq-roletag.standard{background:#FFF0CE;color:#8A6B00;} .fq-roletag.staff{background:#DFF1EB;color:#0C7A5A;}
+.fq-user-acts{display:flex;gap:8px;margin-left:auto;}
+.fq-audit{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.fq-audit li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:10px 4px;border-bottom:1px solid rgba(36,27,94,.1);font-size:13px;}
+.fq-audit-time{font-size:11px;opacity:.55;font-family:'IBM Plex Sans Thai',sans-serif;}
+.fq-audit-actor{font-size:11px;font-weight:700;color:#4B34B5;}
+.fq-audit-text{grid-column:1/-1;line-height:1.5;}
+.fq-bits{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden;}
+.fq-bit{position:absolute;transform:translate(-50%,-50%);animation:fq-pop forwards cubic-bezier(.15,.7,.4,1);}
+.fq-bit-fall{animation:fq-fall forwards linear;}
+.fq-dotbit{display:block;border-radius:3px;background:currentColor;}
+@keyframes fq-pop{0%{transform:translate(-50%,-50%) scale(.3) rotate(0);opacity:1;}65%{opacity:1;}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.05) rotate(var(--rot));opacity:0;}}
+@keyframes fq-fall{0%{transform:translate(-50%,-50%) rotate(0);opacity:0;}8%{opacity:1;}85%{opacity:1;}
+  100%{transform:translate(calc(-50% + var(--drift)),105vh) rotate(var(--rot));opacity:0;}}
+.fq-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:95;display:flex;align-items:center;gap:8px;background:var(--cream);
+  color:var(--grape);padding:12px 18px;border-radius:999px;font-weight:700;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fq-rise .35s ease-out;max-width:90vw;}
+@keyframes fq-rise{from{opacity:0;transform:translate(-50%,14px);}to{opacity:1;transform:translate(-50%,0);}}
+.fq-modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:rgba(23,15,63,.8);padding:20px;}
+.fq-pin-card{position:relative;background:var(--cream);color:var(--grape);border-radius:28px;padding:26px 20px 20px;text-align:center;width:100%;max-width:330px;animation:fq-zoom .3s cubic-bezier(.2,.9,.3,1.3);}
+.fq-pin-card.shake{animation:fq-shake .4s;}
+@keyframes fq-shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(9px);}60%{transform:translateX(-6px);}80%{transform:translateX(4px);}}
+.fq-close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:12px;background:rgba(36,27,94,.07);color:var(--grape);display:grid;place-items:center;}
+.fq-pin-ic{color:#7A5CE0;margin-bottom:6px;}
+.fq-pin-title{font-family:'Chonburi',serif;font-size:21px;margin:0 0 4px;}
+.fq-pin-sub{font-size:13px;margin:0 0 16px;opacity:.7;}
+.fq-pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:18px;}
+.fq-pin-dot{width:16px;height:16px;border-radius:50%;background:rgba(36,27,94,.14);transition:background .15s,transform .15s;}
+.fq-pin-dot.on{background:#7A5CE0;transform:scale(1.15);} .fq-pin-dot.bad{background:rgba(240,67,111,.25);}
+.fq-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.fq-key{min-height:56px;border-radius:16px;background:#fff;color:var(--grape);font-size:22px;font-weight:700;box-shadow:0 3px 0 rgba(36,27,94,.18);transition:transform .1s,box-shadow .1s;}
+.fq-key:active{transform:translateY(3px);box-shadow:0 0 0 rgba(36,27,94,.18);}
+.fq-key.ghost{background:rgba(36,27,94,.07);box-shadow:none;display:grid;place-items:center;}
+.fq-party-card{background:var(--cream);color:var(--grape);border-radius:28px;padding:28px 22px;text-align:center;max-width:350px;animation:fq-zoom .4s cubic-bezier(.2,.9,.3,1.4);}
+@keyframes fq-zoom{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+.fq-party-ic{color:var(--coral);margin-bottom:8px;}
+.fq-party-title{font-family:'Chonburi',serif;font-size:25px;margin:0 0 8px;}
+.fq-party-body{font-size:15px;margin:0 0 18px;line-height:1.6;}
+.fq-party-btn{min-height:52px;width:100%;border-radius:16px;font-size:18px;font-weight:700;color:#3A1E4A;background:linear-gradient(160deg,#FFE27A,#FFC400);box-shadow:0 4px 0 #D49F00;}
+.fq-party-btn:active{transform:translateY(4px);box-shadow:0 0 0 #D49F00;}
+@media (prefers-reduced-motion: reduce){.fq-root *,.fq-bit{animation:none!important;transition:none!important;}}
+
+.boot{color:#FFF6E5;font-family:system-ui,sans-serif;text-align:center;padding:22vh 20px;font-size:16px;
+background:#241B5E;min-height:100vh;margin:0;}
+</style>
+</head>
+<body style="background:#241B5E">
+<div id="root"><div class="boot">กำลังโหลดสมุดดาว...</div></div>
+
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script type="text/babel" data-type="module" data-presets="react">
+import React from "https://esm.sh/react@18.3.1";
+import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import * as Lucide from "https://esm.sh/lucide-react@0.383.0?external=react";
+
+/* ===================== ตั้งค่า Supabase (แก้ 2 บรรทัดนี้) ===================== */
+const SUPABASE_URL = "https://pwoibgpqkycqfchofznx.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Tp_Mvw7HqdpW2jD9VK5OZw_hS_Gd0eD";
+/* ========================================================================== */
+
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+const { Star, Heart, Sparkles, Clock, Check, CheckCheck, Undo2, Gift, Plus, Trash, BedDouble, Shirt, Brush, Trash2, Sprout, Fish, Lightbulb, ShowerHead, Droplets, UtensilsCrossed, Footprints, PanelsTopLeft, ListChecks, ShieldCheck, Smile, Armchair, Lock, Delete, X, RotateCcw, Users, Pencil, Square, SquareCheck, Wallet, AlertTriangle, BadgeCheck, BarChart3, TrendingUp, TrendingDown, UserPlus, Save, KeyRound, PartyPopper, LogOut, Mail } = Lucide;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+});
+
+/* ---------- util ---------- */
+const DAY = 86400000;
+
+const ROLES = {
+  admin:      { label: "Super Admin", short: "จัดการระบบ อนุมัติงาน ประเมินแม่บ้าน", pin: true },
+  supervised: { label: "Supervised", short: "ส่งงานรอผู้ดูแลอนุมัติ", pin: false },
+  standard:   { label: "Standard", short: "ทำเสร็จรับดาวทันที ตัวหนังสือใหญ่", pin: false },
+  staff:      { label: "Staff", short: "เช็กลิสต์งานและค่าตอบแทน", pin: false },
+};
+
+const ICONS = {
+  brush: Brush, bed: BedDouble, shirt: Shirt, sprout: Sprout, fish: Fish,
+  bulb: Lightbulb, shower: ShowerHead, trash: Trash2, drop: Droplets,
+  kitchen: UtensilsCrossed, floor: Footprints, glass: PanelsTopLeft, list: ListChecks,
+};
+const iconOf = (k) => ICONS[k] || ListChecks;
+
+const HUES = ["coral", "gold", "sky", "grape", "teal"];
+const TONES = ["#FFD028", "#FF6B8A", "#3DE0B0", "#56C7FF", "#FFFFFF", "#C08BFF"];
+
+const num = (v) => Number(v) || 0;
+const fmt = (n) => (Number.isInteger(Number(n)) ? String(Number(n)) : Number(n).toFixed(1));
+const baht = (n) => Math.round(Number(n) || 0).toLocaleString("th-TH");
+const netStars = (base, mult) => Math.round(num(base) * num(mult) * 10) / 10;
+
+const startOfWeek = (t) => {
+  const d = new Date(t); const off = (d.getDay() + 6) % 7;
+  d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - off); return d.getTime();
+};
+const startOfMonth = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); };
+const prevMonthStart = (t) => { const d = new Date(startOfMonth(t)); d.setMonth(d.getMonth() - 1); return d.getTime(); };
+const ms = (ts) => new Date(ts).getTime();
+const thDate = (ts) => new Date(ts).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const thDay = (ts) => new Date(ts).toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" });
+
+const pickKind = () => { const r = Math.random(); return r > 0.5 ? "star" : r > 0.25 ? "heart" : "dot"; };
+
+/* ---------- api ---------- */
+const unwrap = (res) => { if (res.error) throw res.error; return res.data; };
+
+function fetchAll() {
+  const [users, tasks, entries, maidLog, audit, settings] = await Promise.all([
+    supabase.from("users").select("*").order("sort"),
+    supabase.from("tasks").select("*").order("created_at"),
+    supabase.from("entries").select("*").order("ts", { ascending: false }).limit(2000),
+    supabase.from("maid_log").select("*").order("ts", { ascending: false }).limit(1000),
+    supabase.from("audit").select("*").order("ts", { ascending: false }).limit(150),
+    supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
+  ]);
+  return {
+    users: unwrap(users) || [],
+    tasks: unwrap(tasks) || [],
+    entries: unwrap(entries) || [],
+    maidLog: unwrap(maidLog) || [],
+    audit: unwrap(audit) || [],
+    settings: unwrap(settings) || {},
+  };
+}
+
+const logAudit = (actor, text) =>
+  supabase.from("audit").insert({ actor, text }).then(unwrap);
+
+const setStatus = (taskId, status) =>
+  supabase.from("tasks").update({ status }).eq("id", taskId).then(unwrap);
+
+const addEntry = (user, task) =>
+  supabase.from("entries").insert({
+    user_id: user.id, title: task.title, base: task.base,
+    mult: user.mult, stars: netStars(task.base, user.mult),
+  }).then(unwrap);
+
+const addMaidRating = (task, rating) =>
+  supabase.from("maid_log").insert({ title: task.title, base: task.base, rating }).then(unwrap);
+
+const addTask = (task) => supabase.from("tasks").insert(task).then(unwrap);
+const deleteTask = (id) => supabase.from("tasks").delete().eq("id", id).then(unwrap);
+
+const addUser = (user) => supabase.from("users").insert(user).then(unwrap);
+const updateUser = (id, patch) => supabase.from("users").update(patch).eq("id", id).then(unwrap);
+const deleteUser = (id) => supabase.from("users").delete().eq("id", id).then(unwrap);
+
+const updateSettings = (patch) =>
+  supabase.from("settings").update(patch).eq("id", 1).then(unwrap);
+
+const resetWeek = () => supabase.rpc("reset_week").then(unwrap);
+
+function subscribeAll(onChange) {
+  const channel = supabase
+    .channel("fqh-live")
+    .on("postgres_changes", { event: "*", schema: "public" }, onChange)
+    .subscribe();
+  return () => supabase.removeChannel(channel);
+}
+const api = { fetchAll, logAudit, setStatus, addEntry, addMaidRating, addTask, deleteTask, addUser, updateUser, deleteUser, updateSettings, resetWeek, subscribeAll };
+
+/* ---------- components ---------- */
+function SignIn() {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const send = async () => {
+    if (!email.trim()) return;
+    setBusy(true); setErr("");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setBusy(false);
+    if (error) setErr(error.message);
+    else setSent(true);
+  };
+
+  return (
+    <div className="fq-root">
+      <div className="fq-signin">
+        <Sparkles size={34} strokeWidth={2.3} className="fq-signin-ic" />
+        <h1 className="fq-title">ภารกิจดาวของบ้านเรา</h1>
+        {sent ? (
+          <>
+            <p className="fq-signin-sub"><Check size={16} strokeWidth={2.8} /> ส่งลิงก์เข้าใช้งานไปที่ {email} แล้ว</p>
+            <p className="fq-signin-hint">เปิดอีเมลในเครื่องนี้แล้วกดลิงก์ ระบบจะจำเครื่องนี้ไว้ ไม่ต้องล็อกอินซ้ำทุกวัน</p>
+          </>
+        ) : (
+          <>
+            <p className="fq-signin-sub">ใส่อีเมลที่อยู่ในรายชื่อของบ้าน ระบบจะส่งลิงก์เข้าใช้งานให้</p>
+            <label className="fq-field">
+              <span>อีเมล</span>
+              <input className="fq-input" type="email" inputMode="email" autoComplete="email"
+                value={email} onChange={(e) => setEmail(e.target.value)} placeholder="dad@example.com" />
+            </label>
+            <button className="fq-primary" onClick={send} disabled={busy}>
+              <Mail size={18} strokeWidth={2.6} /> {busy ? "กำลังส่ง..." : "ส่งลิงก์เข้าใช้งาน"}
+            </button>
+            {err && <p className="fq-signin-err">{err}</p>}
+            <p className="fq-signin-hint">อีเมลที่ไม่อยู่ในรายชื่อจะล็อกอินได้แต่มองไม่เห็นข้อมูลของบ้าน</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Gauge({ value, target }) {
+  const R = 46, C = 2 * Math.PI * R;
+  const fill = Math.min(100, Math.max(0, value));
+  const ok = value >= target;
+  const rad = ((target / 100) * 360 - 90) * Math.PI / 180;
+  return (
+    <svg viewBox="0 0 120 120" className="fq-gauge" role="img" aria-label={`อัตราความสำเร็จ ${value}%`}>
+      <circle cx="60" cy="60" r={R} fill="none" stroke="#DDE5EC" strokeWidth="12" />
+      <circle cx="60" cy="60" r={R} fill="none" stroke={ok ? "#12A87B" : "#E0912B"} strokeWidth="12"
+        strokeLinecap="round" strokeDasharray={`${(fill / 100) * C} ${C}`}
+        transform="rotate(-90 60 60)" className="fq-gauge-arc" />
+      <circle cx={60 + Math.cos(rad) * R} cy={60 + Math.sin(rad) * R} r="4.5" fill="#0F2C3F" />
+      <text x="60" y="58" textAnchor="middle" className="fq-gauge-num">{value}%</text>
+      <text x="60" y="76" textAnchor="middle" className="fq-gauge-cap">เป้า {target}%</text>
+    </svg>
+  );
+}
+
+function TaskCard({ task, user, onSubmit, onCancel, onFinish }) {
+  const Icon = iconOf(task.icon);
+  const net = netStars(task.base, user.mult);
+  const supervised = user.role === "supervised";
+  return (
+    <article className={`fq-card ${task.status}`}>
+      <div className="fq-card-top">
+        <span className="fq-card-ic"><Icon size={24} strokeWidth={2.4} /></span>
+        <span className="fq-card-stars">
+          <Star size={15} strokeWidth={0} fill="currentColor" /><span>{fmt(net)} ดาว</span>
+        </span>
+      </div>
+      <h3 className="fq-card-title">{task.title}</h3>
+      <p className="fq-card-where">{task.place} · พื้นฐาน {task.base} × ตัวคูณ {fmt(user.mult)}x</p>
+
+      {task.status === "done" ? (
+        <div className="fq-done"><Check size={20} strokeWidth={3} /> ได้ดาวแล้ว</div>
+      ) : supervised ? (
+        task.status === "pending" ? (
+          <div className="fq-waitwrap">
+            <div className="fq-wait"><Clock size={18} strokeWidth={2.6} /> รอตรวจ</div>
+            <button className="fq-undo" onClick={() => onCancel(task)}>
+              <Undo2 size={16} strokeWidth={2.6} /> ยกเลิก
+            </button>
+          </div>
+        ) : (
+          <button className="fq-send" onClick={(e) => onSubmit(task, e.currentTarget)}>ส่งงาน</button>
+        )
+      ) : (
+        <button className="fq-finish" onClick={(e) => onFinish(task, e.currentTarget)}>
+          <Check size={20} strokeWidth={3} /> ทำเสร็จแล้ว รับดาว
+        </button>
+      )}
+    </article>
+  );
+}
+
+function RateRow({ task, onRate }) {
+  const [hover, setHover] = useState(0);
+  const Ic = iconOf(task.icon);
+  return (
+    <li className="fq-row rate">
+      <span className="fq-row-ic staff"><Ic size={22} strokeWidth={2.4} /></span>
+      <span className="fq-row-text">
+        <span className="fq-row-title">{task.title}</span>
+        <span className="fq-row-sub">พี่แม่บ้านส่งมา · {task.base} ดาวงาน</span>
+      </span>
+      <span className="fq-rate">
+        <span className="fq-rate-label">ให้คะแนนคุณภาพ</span>
+        <span className="fq-rate-stars" onMouseLeave={() => setHover(0)}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button key={n} className={`fq-rate-btn ${n <= hover ? "hot" : ""}`}
+              onMouseEnter={() => setHover(n)} onClick={() => onRate(task, n)} aria-label={`ให้ ${n} ดาว`}>
+              <Star size={26} strokeWidth={n <= hover ? 0 : 2} fill={n <= hover ? "currentColor" : "none"} />
+            </button>
+          ))}
+        </span>
+      </span>
+    </li>
+  );
+}
+
+function Confetti({ bits }) {
+  return (
+    <div className="fq-bits" aria-hidden="true">
+      {bits.map((p) => (
+        <span key={p.key} className={p.mode === "fall" ? "fq-bit fq-bit-fall" : "fq-bit"}
+          style={{
+            left: p.x, top: p.y, color: p.tone,
+            "--dx": `${p.dx || 0}px`, "--dy": `${p.dy || 0}px`,
+            "--drift": `${p.drift || 0}px`, "--rot": `${p.rot}deg`,
+            animationDuration: `${p.life}ms`, animationDelay: `${p.delay || 0}ms`,
+          }}>
+          {p.kind === "star" ? <Star size={p.size} strokeWidth={0} fill="currentColor" />
+            : p.kind === "heart" ? <Heart size={p.size} strokeWidth={0} fill="currentColor" />
+              : <span className="fq-dotbit" style={{ width: p.size * 0.5, height: p.size * 0.7 }} />}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function PinPad({ name, pin, error, onDigit, onBack, onClose }) {
+  return (
+    <div className="fq-modal" role="dialog" aria-modal="true">
+      <div className={`fq-pin-card ${error ? "shake" : ""}`}>
+        <button className="fq-close" onClick={onClose} aria-label="ปิด"><X size={20} strokeWidth={2.6} /></button>
+        <Lock size={30} strokeWidth={2.4} className="fq-pin-ic" />
+        <p className="fq-pin-title">โปรไฟล์{name}</p>
+        <p className="fq-pin-sub">{error ? "รหัสไม่ถูก ลองอีกครั้ง" : "Super Admin · ใส่รหัส 4 หลัก"}</p>
+        <div className="fq-pin-dots">
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className={`fq-pin-dot ${i < pin.length ? "on" : ""} ${error ? "bad" : ""}`} />
+          ))}
+        </div>
+        <div className="fq-pad">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+            <button key={n} className="fq-key" onClick={() => onDigit(String(n))}>{n}</button>
+          ))}
+          <span />
+          <button className="fq-key" onClick={() => onDigit("0")}>0</button>
+          <button className="fq-key ghost" onClick={onBack} aria-label="ลบ"><Delete size={22} strokeWidth={2.4} /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatsTab({ span, setSpan, stats }) {
+  const up = stats.growth >= 0;
+  return (
+    <div className="fq-review">
+      <div className="fq-segment">
+        <button className={`fq-seg ${span === "week" ? "on" : ""}`} onClick={() => setSpan("week")}>
+          สัปดาห์นี้ vs สัปดาห์ที่แล้ว
+        </button>
+        <button className={`fq-seg ${span === "month" ? "on" : ""}`} onClick={() => setSpan("month")}>
+          เดือนนี้ vs เดือนที่แล้ว
+        </button>
+      </div>
+
+      <div className="fq-statcard">
+        <div>
+          <p className="fq-stat-label">ดาวรวมทั้งบ้าน{span === "week" ? "สัปดาห์นี้" : "เดือนนี้"}</p>
+          <p className="fq-stat-num">{fmt(stats.total)} <span>ดาว</span></p>
+          <p className="fq-stat-prev">ช่วงก่อนหน้า {fmt(stats.prevTotal)} ดาว</p>
+        </div>
+        <span className={`fq-growth ${up ? "up" : "down"}`}>
+          {up ? <TrendingUp size={18} strokeWidth={2.6} /> : <TrendingDown size={18} strokeWidth={2.6} />}
+          {up ? "+" : ""}{stats.growth}%
+        </span>
+      </div>
+
+      <h3 className="fq-h3"><BarChart3 size={17} strokeWidth={2.5} /> เปรียบเทียบรายคน</h3>
+      <ul className="fq-bars">
+        {stats.rows.map((r) => {
+          const d = r.cur - r.pre;
+          return (
+            <li key={r.id} className="fq-barrow">
+              <div className="fq-barhead">
+                <span className="fq-barname">{r.name}</span>
+                <span className={`fq-bardelta ${d >= 0 ? "up" : "down"}`}>{d >= 0 ? "+" : ""}{fmt(d)} ดาว</span>
+              </div>
+              <div className="fq-bar"><span style={{ width: `${(r.cur / stats.max) * 100}%` }} /><b>{fmt(r.cur)}</b></div>
+              <div className="fq-bar pre"><span style={{ width: `${(r.pre / stats.max) * 100}%` }} /><b>{fmt(r.pre)}</b></div>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="fq-legend"><i className="cur" /> ช่วงปัจจุบัน <i className="pre" /> ช่วงก่อนหน้า</p>
+    </div>
+  );
+}
+
+function ManageTab({
+  users, tasks, settings, meId,
+  onAddTask, onRemoveTask, onAddUser, onSaveUser, onRemoveUser, onSavePin,
+}) {
+  const [nt, setNt] = useState({ title: "", place: "", base: 1, owner: users[0] ? users[0].id : "" });
+  const [nu, setNu] = useState({ name: "", role: "standard", goal: 10, mult: 1 });
+  const [edit, setEdit] = useState(null);
+  const [del, setDel] = useState(null);
+  const [pin, setPin] = useState(settings.pin || "");
+
+  const submitTask = () => {
+    if (!nt.title.trim() || !nt.owner) return;
+    onAddTask({
+      owner: nt.owner, title: nt.title.trim(), place: nt.place.trim() || "ทั่วบ้าน",
+      base: Number(nt.base) || 1, icon: "list", high: false, status: "todo",
+    });
+    setNt({ ...nt, title: "", place: "" });
+  };
+
+  const submitUser = () => {
+    if (!nu.name.trim()) return;
+    onAddUser({
+      name: nu.name.trim(), role: nu.role, goal: Number(nu.goal) || 0,
+      mult: Number(nu.mult) || 1, note: ROLES[nu.role].short, sort: 100,
+    });
+    setNu({ name: "", role: "standard", goal: 10, mult: 1 });
+  };
+
+  return (
+    <div className="fq-review">
+      <h3 className="fq-h3" style={{ marginTop: 0 }}><Plus size={17} strokeWidth={2.6} /> เพิ่มภารกิจใหม่</h3>
+      <div className="fq-form">
+        <label className="fq-field"><span>ชื่องาน</span>
+          <input className="fq-input" value={nt.title} placeholder="เช่น ล้างตู้เย็น"
+            onChange={(e) => setNt({ ...nt, title: e.target.value })} /></label>
+        <label className="fq-field"><span>สถานที่</span>
+          <input className="fq-input" value={nt.place} placeholder="เช่น ห้องครัว"
+            onChange={(e) => setNt({ ...nt, place: e.target.value })} /></label>
+        <div className="fq-field-row">
+          <label className="fq-field"><span>ดาวพื้นฐาน</span>
+            <input className="fq-input" type="number" min="1" max="10" value={nt.base}
+              onChange={(e) => setNt({ ...nt, base: e.target.value })} /></label>
+          <label className="fq-field"><span>มอบหมายให้</span>
+            <select className="fq-input" value={nt.owner} onChange={(e) => setNt({ ...nt, owner: e.target.value })}>
+              {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </select></label>
+        </div>
+        <button className="fq-primary" onClick={submitTask}><Plus size={18} strokeWidth={2.8} /> เพิ่มภารกิจ</button>
+      </div>
+
+      <h3 className="fq-h3"><ListChecks size={17} strokeWidth={2.5} /> ภารกิจทั้งหมด ({tasks.length})</h3>
+      <ul className="fq-manage">
+        {users.map((u) => {
+          const own = tasks.filter((t) => t.owner === u.id);
+          if (!own.length) return null;
+          return (
+            <li key={u.id} className="fq-mgroup">
+              <p className="fq-mgroup-head">{u.name} · ตัวคูณ {fmt(u.mult)}x</p>
+              {own.map((t) => (
+                <div key={t.id} className="fq-mrow">
+                  <span className="fq-mrow-title">{t.title}</span>
+                  <span className="fq-mrow-sub">{t.place} · {t.base} × {fmt(u.mult)} = {fmt(netStars(t.base, u.mult))} ดาว</span>
+                  <button className="fq-icon-btn danger" onClick={() => onRemoveTask(t)} aria-label="ลบภารกิจ">
+                    <Trash size={16} strokeWidth={2.4} />
+                  </button>
+                </div>
+              ))}
+            </li>
+          );
+        })}
+      </ul>
+
+      <h3 className="fq-h3"><Users size={17} strokeWidth={2.5} /> สมาชิกและสิทธิ์การใช้งาน</h3>
+      <ul className="fq-manage">
+        {users.map((u) => (
+          <li key={u.id} className="fq-user">
+            {edit && edit.id === u.id ? (
+              <div className="fq-form inner">
+                <label className="fq-field"><span>ชื่อ</span>
+                  <input className="fq-input" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></label>
+                <label className="fq-field"><span>บทบาท</span>
+                  <select className="fq-input" value={edit.role} onChange={(e) => setEdit({ ...edit, role: e.target.value })}>
+                    {Object.keys(ROLES).map((k) => <option key={k} value={k}>{ROLES[k].label} — {ROLES[k].short}</option>)}
+                  </select></label>
+                <div className="fq-field-row">
+                  <label className="fq-field"><span>เป้าดาว</span>
+                    <input className="fq-input" type="number" min="0" value={edit.goal}
+                      onChange={(e) => setEdit({ ...edit, goal: e.target.value })} /></label>
+                  <label className="fq-field"><span>ตัวคูณ</span>
+                    <input className="fq-input" type="number" step="0.5" min="0.5" max="5" value={edit.mult}
+                      onChange={(e) => setEdit({ ...edit, mult: e.target.value })} /></label>
+                </div>
+                <label className="fq-field"><span>รางวัลประจำรอบ</span>
+                  <input className="fq-input" value={edit.reward || ""} onChange={(e) => setEdit({ ...edit, reward: e.target.value })} /></label>
+                <div className="fq-field-row">
+                  <button className="fq-primary" onClick={() => {
+                    onSaveUser(u, {
+                      name: edit.name, role: edit.role, goal: Number(edit.goal) || 0,
+                      mult: Number(edit.mult) || 1, reward: edit.reward || "",
+                    });
+                    setEdit(null);
+                  }}><Save size={17} strokeWidth={2.6} /> บันทึก</button>
+                  <button className="fq-ghost" onClick={() => setEdit(null)}>ยกเลิก</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="fq-user-main">
+                  <span className="fq-user-name">{u.name}</span>
+                  <span className={`fq-roletag ${u.role}`}>{ROLES[u.role].label}</span>
+                  <span className="fq-user-sub">เป้า {u.goal} ดาว · ตัวคูณ {fmt(u.mult)}x · {ROLES[u.role].short}</span>
+                </div>
+                <div className="fq-user-acts">
+                  <button className="fq-icon-btn" onClick={() => setEdit({ ...u })} aria-label="แก้ไข">
+                    <Pencil size={16} strokeWidth={2.4} />
+                  </button>
+                  {u.id !== meId && (del === u.id ? (
+                    <button className="fq-icon-btn danger wide" onClick={() => { onRemoveUser(u); setDel(null); }}>ยืนยันลบ</button>
+                  ) : (
+                    <button className="fq-icon-btn danger" onClick={() => setDel(u.id)} aria-label="ลบสมาชิก">
+                      <Trash size={16} strokeWidth={2.4} />
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <h3 className="fq-h3"><UserPlus size={17} strokeWidth={2.5} /> เพิ่มสมาชิกใหม่</h3>
+      <div className="fq-form">
+        <label className="fq-field"><span>ชื่อ</span>
+          <input className="fq-input" value={nu.name} placeholder="เช่น คุณย่า"
+            onChange={(e) => setNu({ ...nu, name: e.target.value })} /></label>
+        <label className="fq-field"><span>บทบาท</span>
+          <select className="fq-input" value={nu.role} onChange={(e) => setNu({ ...nu, role: e.target.value })}>
+            {Object.keys(ROLES).map((k) => <option key={k} value={k}>{ROLES[k].label} — {ROLES[k].short}</option>)}
+          </select></label>
+        <div className="fq-field-row">
+          <label className="fq-field"><span>เป้าดาว</span>
+            <input className="fq-input" type="number" min="0" value={nu.goal}
+              onChange={(e) => setNu({ ...nu, goal: e.target.value })} /></label>
+          <label className="fq-field"><span>ตัวคูณ</span>
+            <input className="fq-input" type="number" step="0.5" min="0.5" max="5" value={nu.mult}
+              onChange={(e) => setNu({ ...nu, mult: e.target.value })} /></label>
+        </div>
+        <button className="fq-primary" onClick={submitUser}><UserPlus size={18} strokeWidth={2.6} /> เพิ่มสมาชิก</button>
+      </div>
+
+      <h3 className="fq-h3"><KeyRound size={17} strokeWidth={2.5} /> รหัส PIN ของผู้ดูแล</h3>
+      <div className="fq-form">
+        <div className="fq-field-row">
+          <label className="fq-field"><span>รหัส 4 หลัก</span>
+            <input className="fq-input" inputMode="numeric" maxLength={4} value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} /></label>
+          <button className="fq-primary" onClick={() => pin.length === 4 && onSavePin(pin)}>
+            <Save size={17} strokeWidth={2.6} /> บันทึก PIN
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- app ---------- */
+function App() {
+  const [session, setSession] = useState(undefined);
+  const [db, setDb] = useState(null);
+  const [err, setErr] = useState("");
+  const [who, setWho] = useState(null);
+  const [tab, setTab] = useState("mine");
+  const [span, setSpan] = useState("week");
+
+  const [pin, setPin] = useState("");
+  const [pinFor, setPinFor] = useState(null);
+  const [pinErr, setPinErr] = useState(false);
+  const [unlocked, setUnlocked] = useState(null);
+
+  const [bits, setBits] = useState([]);
+  const [toast, setToast] = useState(null);
+  const [party, setParty] = useState(false);
+  const seq = useRef(0);
+  const partyRef = useRef(false);
+  const timer = useRef(null);
+
+  /* ---------- auth ---------- */
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session || null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  /* ---------- data + realtime ---------- */
+  const reload = useCallback(async () => {
+    try {
+      const data = await api.fetchAll();
+      setDb(data);
+      setErr(data.users.length === 0
+        ? "ยังไม่มีข้อมูล หรืออีเมลนี้ไม่อยู่ในรายชื่อของบ้าน (ตาราง allowed_emails)" : "");
+    } catch (e) {
+      setErr(e.message || "โหลดข้อมูลไม่สำเร็จ");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    reload();
+    const off = api.subscribeAll(() => {
+      clearTimeout(timer.current);
+      timer.current = setTimeout(reload, 250);
+    });
+    return () => { clearTimeout(timer.current); off(); };
+  }, [session, reload]);
+
+  /* ---------- effects ---------- */
+  const burst = useCallback((el, count = 16) => {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const made = Array.from({ length: count }, () => {
+      seq.current += 1;
+      const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 150;
+      return {
+        key: seq.current, mode: "pop", x: r.left + r.width / 2, y: r.top + r.height / 2,
+        dx: Math.cos(a) * d, dy: Math.sin(a) * d - 60, rot: Math.round(Math.random() * 540 - 270),
+        size: 12 + Math.round(Math.random() * 14), life: 900 + Math.round(Math.random() * 500),
+        kind: pickKind(), tone: TONES[Math.floor(Math.random() * TONES.length)],
+      };
+    });
+    setBits((b) => [...b, ...made]);
+    const ids = new Set(made.map((m) => m.key));
+    setTimeout(() => setBits((b) => b.filter((p) => !ids.has(p.key))), 1600);
+  }, []);
+
+  const rain = useCallback((count = 100) => {
+    const made = Array.from({ length: count }, () => {
+      seq.current += 1;
+      return {
+        key: seq.current, mode: "fall", x: Math.random() * window.innerWidth,
+        y: -40 - Math.random() * 260, drift: Math.random() * 160 - 80,
+        rot: Math.round(Math.random() * 1080 - 540), size: 14 + Math.round(Math.random() * 18),
+        life: 2600 + Math.round(Math.random() * 2200), delay: Math.round(Math.random() * 900),
+        kind: pickKind(), tone: TONES[Math.floor(Math.random() * TONES.length)],
+      };
+    });
+    setBits((b) => [...b, ...made]);
+    const ids = new Set(made.map((m) => m.key));
+    setTimeout(() => setBits((b) => b.filter((p) => !ids.has(p.key))), 6000);
+  }, []);
+
+  const say = (t) => { setToast(t); setTimeout(() => setToast((x) => (x === t ? null : x)), 2400); };
+
+  /* ---------- guards ---------- */
+  if (session === undefined) return <Splash text="กำลังตรวจสอบการเข้าใช้งาน..." />;
+  if (!session) return <SignIn />;
+  if (!db) return <Splash text="กำลังโหลดข้อมูลของบ้าน..." />;
+
+  const { users, tasks, entries, maidLog, audit, settings } = db;
+  const me = users.find((u) => u.id === who) || users[0];
+  if (!me) {
+    return (
+      <div className="fq-root">
+        <div className="fq-signin">
+          <h1 className="fq-title">ภารกิจดาวของบ้านเรา</h1>
+          <p className="fq-signin-sub">{err || "ยังไม่มีสมาชิกในระบบ"}</p>
+          <p className="fq-signin-hint">เข้าใช้ด้วยอีเมล {session.user.email}</p>
+          <button className="fq-ghost" onClick={() => supabase.auth.signOut()}>ออกจากระบบ</button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------- derived ---------- */
+  const now = Date.now();
+  const w0 = startOfWeek(now), w1 = w0 - 7 * DAY, m0 = startOfMonth(now), m1 = prevMonthStart(now);
+  const sumIn = (id, from, to) =>
+    entries.filter((e) => e.user_id === id && ms(e.ts) >= from && ms(e.ts) < to)
+      .reduce((s, e) => s + num(e.stars), 0);
+  const weekStars = (id) => sumIn(id, w0, now + DAY);
+
+  const houseGoal = users.filter((u) => u.role !== "staff").reduce((s, u) => s + num(u.goal), 0);
+  const houseStars = users.filter((u) => u.role !== "staff").reduce((s, u) => s + weekStars(u.id), 0);
+
+  const kid = users.find((u) => u.role === "supervised");
+  const staff = users.find((u) => u.role === "staff");
+  const myTasks = tasks.filter((t) => t.owner === me.id);
+  const kidQueue = kid ? tasks.filter((t) => t.owner === kid.id && t.status === "pending") : [];
+  const maidTasks = staff ? tasks.filter((t) => t.owner === staff.id) : [];
+  const maidQueue = maidTasks.filter((t) => t.status === "pending");
+
+  const weekMaid = maidLog.filter((e) => ms(e.ts) >= w0);
+  const passedMaid = weekMaid.filter((e) => e.rating >= 3);
+  const assigned = Math.max(1, maidTasks.length * num(settings.maid_days || 3));
+  const rate = Math.round((passedMaid.length / assigned) * 100);
+  const maidStars = passedMaid.reduce((s, e) => s + num(e.base) * num(staff ? staff.mult : 1), 0);
+  const wageBase = maidStars * num(settings.wage_per_star || 80);
+  const wageBonus = passedMaid.filter((e) => e.rating === 5).length * num(settings.bonus_per_five || 50);
+  const target = num(settings.maid_target || 85);
+
+  const stats = (() => {
+    const cur = span === "week" ? [w0, now + DAY] : [m0, now + DAY];
+    const pre = span === "week" ? [w1, w0] : [m1, m0];
+    const rows = users.filter((u) => u.role !== "staff").map((u) => ({
+      id: u.id, name: u.name, cur: sumIn(u.id, cur[0], cur[1]), pre: sumIn(u.id, pre[0], pre[1]),
+    }));
+    const c = rows.reduce((s, r) => s + r.cur, 0);
+    const p = rows.reduce((s, r) => s + r.pre, 0);
+    return {
+      rows, total: c, prevTotal: p,
+      growth: p === 0 ? (c > 0 ? 100 : 0) : Math.round(((c - p) / p) * 100),
+      max: Math.max(1, ...rows.map((r) => Math.max(r.cur, r.pre))),
+    };
+  })();
+
+  if (houseGoal > 0 && houseStars >= houseGoal && !partyRef.current) {
+    partyRef.current = true;
+    setTimeout(() => { setParty(true); rain(120); }, 100);
+  }
+  if (houseStars < houseGoal) partyRef.current = false;
+
+  /* ---------- actions ---------- */
+  const guard = (fn) => async (...args) => {
+    try { await fn(...args); await reload(); }
+    catch (e) { setErr(e.message || "บันทึกไม่สำเร็จ"); }
+  };
+
+  const submitTask = guard(async (task, el) => {
+    await api.setStatus(task.id, "pending");
+    await api.logAudit(me.name, `ส่งงาน "${task.title}" รอการอนุมัติ`);
+    burst(el); say("ส่งให้ผู้ดูแลตรวจแล้ว");
+  });
+
+  const cancelTask = guard(async (task) => {
+    await api.setStatus(task.id, "todo");
+    await api.logAudit(me.name, `ยกเลิกการส่งงาน "${task.title}"`);
+  });
+
+  const finishTask = guard(async (task, el) => {
+    const owner = users.find((u) => u.id === task.owner);
+    await api.setStatus(task.id, "done");
+    await api.addEntry(owner, task);
+    await api.logAudit(owner.name, `ทำงาน "${task.title}" เสร็จและรับดาวทันที (+${fmt(netStars(task.base, owner.mult))} ดาว)`);
+    burst(el); say(`ได้ ${fmt(netStars(task.base, owner.mult))} ดาว`);
+  });
+
+  const approveTask = guard(async (task, el) => {
+    const owner = users.find((u) => u.id === task.owner);
+    const net = netStars(task.base, owner.mult);
+    await api.setStatus(task.id, "done");
+    await api.addEntry(owner, task);
+    await api.logAudit(me.name, `${me.name}อนุมัติงาน "${task.title}" ให้${owner.name} (+${fmt(net)} ดาว = ${task.base} × ${fmt(owner.mult)})`);
+    burst(el); say(`อนุมัติ +${fmt(net)} ดาวให้${owner.name}`);
+  });
+
+  const rejectTask = guard(async (task) => {
+    await api.setStatus(task.id, "todo");
+    await api.logAudit(me.name, `ส่งงาน "${task.title}" กลับไปให้ทำใหม่`);
+  });
+
+  const maidSubmit = guard(async (task) => {
+    await api.setStatus(task.id, "pending");
+    await api.logAudit(me.name, `บันทึกงาน "${task.title}" รอตรวจประเมิน`);
+    say("บันทึกงานแล้ว รอตรวจประเมิน");
+  });
+
+  const maidUndo = guard(async (task) => {
+    await api.setStatus(task.id, "todo");
+    await api.logAudit(me.name, `ยกเลิกการบันทึกงาน "${task.title}"`);
+  });
+
+  const rateMaid = guard(async (task, score) => {
+    await api.setStatus(task.id, "rated");
+    await api.addMaidRating(task, score);
+    await api.updateSettings({ paid: false });
+    await api.logAudit(me.name, `${me.name}ประเมินงาน "${task.title}" ของพี่แม่บ้าน ${score} ดาว (${score >= 3 ? "ผ่าน" : "ไม่ผ่าน"})`);
+    say(score >= 3 ? `ให้ ${score} ดาว ผ่านเกณฑ์` : `ให้ ${score} ดาว ยังไม่ผ่านเกณฑ์`);
+  });
+
+  const togglePaid = guard(async (el) => {
+    const next = !settings.paid;
+    await api.updateSettings({ paid: next });
+    await api.logAudit(me.name, next
+      ? `บันทึกการจ่ายค่าตอบแทนแม่บ้าน ${baht(wageBase + wageBonus)} บาท`
+      : "ย้อนสถานะค่าตอบแทนเป็นรอจ่าย");
+    if (next) burst(el, 12);
+  });
+
+  const addTask = guard(async (t) => {
+    await api.addTask(t);
+    const owner = users.find((u) => u.id === t.owner);
+    await api.logAudit(me.name, `เพิ่มภารกิจใหม่: "${t.title}" (${t.base} ดาวพื้นฐาน) ให้${owner ? owner.name : ""}`);
+    say("เพิ่มภารกิจใหม่แล้ว");
+  });
+
+  const removeTask = guard(async (t) => {
+    await api.deleteTask(t.id);
+    await api.logAudit(me.name, `ลบภารกิจ "${t.title}"`);
+  });
+
+  const addUser = guard(async (u) => {
+    await api.addUser(u);
+    await api.logAudit(me.name, `เพิ่มสมาชิกใหม่: ${u.name} (${ROLES[u.role].label}, เป้า ${u.goal} ดาว, ตัวคูณ ${u.mult}x)`);
+    say("เพิ่มสมาชิกแล้ว");
+  });
+
+  const saveUser = guard(async (u, patch) => {
+    await api.updateUser(u.id, patch);
+    await api.logAudit(me.name, `แก้ไขโปรไฟล์ ${patch.name}: บทบาท ${ROLES[patch.role].label}, เป้า ${patch.goal} ดาว, ตัวคูณ ${patch.mult}x${num(u.mult) !== num(patch.mult) ? ` (เดิม ${fmt(u.mult)}x)` : ""}`);
+    say("บันทึกโปรไฟล์แล้ว");
+  });
+
+  const removeUser = guard(async (u) => {
+    await api.deleteUser(u.id);
+    await api.logAudit(me.name, `ลบสมาชิก ${u.name} และภารกิจทั้งหมดของสมาชิกคนนี้`);
+    if (who === u.id) setWho(null);
+  });
+
+  const savePin = guard(async (code) => {
+    await api.updateSettings({ pin: code });
+    await api.logAudit(me.name, "เปลี่ยนรหัส PIN ของผู้ดูแล");
+    say("บันทึก PIN ใหม่แล้ว");
+  });
+
+  const doReset = guard(async () => {
+    await api.resetWeek();
+    partyRef.current = false;
+    say("เริ่มรอบใหม่แล้ว");
+  });
+
+  /* ---------- profile switch ---------- */
+  const pick = (u) => {
+    setTab("mine");
+    if (ROLES[u.role].pin && unlocked !== u.id) { setPin(""); setPinErr(false); setPinFor(u.id); return; }
+    if (!ROLES[u.role].pin) setUnlocked(null);
+    setWho(u.id);
+  };
+
+  const tapPin = (d) => {
+    setPinErr(false);
+    const next = (pin + d).slice(0, 4);
+    setPin(next);
+    if (next.length === 4) setTimeout(async () => {
+      if (next === (settings.pin || "3103")) {
+        const u = users.find((x) => x.id === pinFor);
+        setUnlocked(pinFor); setWho(pinFor); setPinFor(null); setPin("");
+        await api.logAudit(u ? u.name : "ผู้ดูแล", "ปลดล็อกโหมดผู้ดูแลด้วย PIN");
+        reload();
+      } else { setPinErr(true); setPin(""); }
+    }, 150);
+  };
+
+  const isAdmin = me.role === "admin";
+  const isStaff = me.role === "staff";
+  const mine = weekStars(me.id);
+  const left = Math.max(0, num(me.goal) - mine);
+
+  return (
+    <div className="fq-root">
+      <div className="fq-shell">
+        <header className="fq-top">
+          <div>
+            <h1 className="fq-title">ภารกิจดาวของบ้านเรา</h1>
+            <p className="fq-sub">{thDay(now)} · เข้าใช้เป็น {session.user.email}</p>
+          </div>
+          <div className="fq-top-acts">
+            <Users size={20} strokeWidth={2.4} className="fq-top-ic" />
+            <button className="fq-signout" onClick={() => supabase.auth.signOut()} aria-label="ออกจากระบบ">
+              <LogOut size={17} strokeWidth={2.4} />
+            </button>
+          </div>
+        </header>
+
+        {err && <p className="fq-warn">{err}</p>}
+
+        <section className="fq-pool">
+          <div className="fq-pool-head">
+            <div className="fq-count">
+              <Star size={32} strokeWidth={0} fill="#FFD028" className="fq-count-star" />
+              <span className="fq-count-num">{fmt(houseStars)}</span>
+              <span className="fq-count-goal">/ {houseGoal}</span>
+            </div>
+            <p className="fq-pool-msg">
+              {houseStars >= houseGoal ? "ครบแล้ว จัดหมูกระทะ!" : `ทั้งบ้านขาดอีก ${fmt(houseGoal - houseStars)} ดาว`}
+            </p>
+          </div>
+          <div className="fq-track" role="progressbar" aria-valuenow={houseStars} aria-valuemin={0} aria-valuemax={houseGoal}>
+            <div className="fq-fill" style={{ width: `${Math.min(100, (houseStars / Math.max(1, houseGoal)) * 100)}%` }} />
+          </div>
+          <div className="fq-reward"><Gift size={18} strokeWidth={2.4} /><span>ครบ {houseGoal} ดาวเมื่อไหร่ {settings.family_reward}</span></div>
+          <p className="fq-poolnote">เป้าหมายรวมคิดจากเป้าของสมาชิกในบ้าน ไม่รวมงานของพี่แม่บ้าน</p>
+        </section>
+
+        <div className="fq-people" role="tablist">
+          {users.map((u) => {
+            const Ic = u.role === "staff" ? Sparkles : u.role === "admin" ? (u.hue === "grape" ? Heart : ShieldCheck)
+              : u.role === "standard" ? Armchair : Smile;
+            const locked = ROLES[u.role].pin && unlocked !== u.id;
+            return (
+              <button key={u.id} role="tab" aria-selected={who === u.id}
+                className={`fq-person hue-${u.hue} ${me.id === u.id ? "on" : ""} ${u.role === "staff" ? "staff" : ""}`}
+                onClick={() => pick(u)}>
+                <span className="fq-person-ic"><Ic size={20} strokeWidth={2.5} /></span>
+                <span className="fq-person-name">{u.name}</span>
+                <span className="fq-person-stars">
+                  {u.role === "staff" ? `ผลงาน ${rate}%` : `${fmt(weekStars(u.id))}/${u.goal} ดาว`}
+                  {num(u.mult) !== 1 && u.role !== "staff" ? ` · ${fmt(u.mult)}x` : ""}
+                </span>
+                {locked && <Lock size={13} strokeWidth={2.8} className="fq-person-lock" />}
+                {ROLES[u.role].pin && (kidQueue.length + maidQueue.length) > 0 &&
+                  <span className="fq-badge">{kidQueue.length + maidQueue.length}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {isStaff ? (
+          <section className="fq-staff">
+            <div className="fq-staff-head">
+              <div>
+                <h2 className="fq-staff-name">{me.name}</h2>
+                <p className="fq-staff-note">{me.note} · บทบาท {ROLES[me.role].label}</p>
+              </div>
+              <span className="fq-staff-chip">คะแนนแยกจากกองรวมของบ้าน</span>
+            </div>
+
+            <div className="fq-gauge-row">
+              <Gauge value={rate} target={target} />
+              <div className="fq-gauge-info">
+                <p className="fq-gauge-label">อัตราความสำเร็จประจำสัปดาห์</p>
+                <p className="fq-gauge-detail">ผ่านเกณฑ์ {passedMaid.length} จาก {assigned} งานที่มอบหมาย</p>
+                <p className={`fq-gauge-status ${rate >= target ? "ok" : "low"}`}>
+                  {rate >= target
+                    ? <><BadgeCheck size={16} strokeWidth={2.6} /> ถึงเป้าหมายขั้นต่ำ {target}%</>
+                    : <><AlertTriangle size={16} strokeWidth={2.6} /> ต่ำกว่าเป้า {target}% อีก {Math.max(0, Math.ceil((target / 100) * assigned) - passedMaid.length)} งาน</>}
+                </p>
+              </div>
+            </div>
+
+            <h3 className="fq-staff-h3">เช็กลิสต์งานวันนี้</h3>
+            <ul className="fq-check">
+              {maidTasks.map((t) => {
+                const Ic = iconOf(t.icon);
+                return (
+                  <li key={t.id} className={`fq-check-item ${t.status}`}>
+                    <button className="fq-check-btn" disabled={t.status !== "todo"}
+                      onClick={() => maidSubmit(t)} aria-label={`บันทึกงาน ${t.title}`}>
+                      {t.status === "todo" ? <Square size={30} strokeWidth={2.2} /> : <SquareCheck size={30} strokeWidth={2.2} />}
+                    </button>
+                    <div className="fq-check-body">
+                      <div className="fq-check-line">
+                        <Ic size={16} strokeWidth={2.4} className="fq-check-ic" />
+                        <span className="fq-check-title">{t.title}</span>
+                        {t.high && <span className="fq-flag">สำคัญสูง</span>}
+                      </div>
+                      <p className="fq-check-where">{t.place} · {t.base} ดาวงาน</p>
+                      {t.status === "pending" && (
+                        <div className="fq-check-state"><Clock size={15} strokeWidth={2.6} /> รอตรวจประเมิน
+                          <button className="fq-check-undo" onClick={() => maidUndo(t)}>
+                            <Undo2 size={14} strokeWidth={2.6} /> ยกเลิก
+                          </button>
+                        </div>)}
+                      {t.status === "rated" && <div className="fq-check-state done"><CheckCheck size={15} strokeWidth={2.6} /> ตรวจประเมินแล้ว</div>}
+                    </div>
+                  </li>);
+              })}
+            </ul>
+
+            <div className="fq-wage plain">
+              <div className="fq-wage-line"><span>ดาวงานที่ผ่านเกณฑ์</span><span>{fmt(maidStars)} ดาว</span></div>
+              <div className="fq-wage-line"><span>ค่าตอบแทนสะสม</span><span>{baht(wageBase + wageBonus)} บาท</span></div>
+              <div className="fq-wage-line"><span>สถานะการจ่าย</span>
+                <span className={settings.paid ? "paid" : "pending"}>{settings.paid ? "จ่ายแล้ว" : "รอจ่าย"}</span></div>
+            </div>
+          </section>
+        ) : (
+          <section className={`fq-panel hue-${me.hue} ${me.role === "standard" ? "big" : ""}`}>
+            <div className="fq-panel-head">
+              <div>
+                <h2 className="fq-panel-name">{me.name}</h2>
+                <p className="fq-panel-note">{me.note} · {ROLES[me.role].label} · ตัวคูณ {fmt(me.mult)}x</p>
+              </div>
+              <div className="fq-panel-score">
+                <span className="fq-panel-num">{fmt(mine)}</span><span className="fq-panel-den">/{me.goal}</span>
+              </div>
+            </div>
+            <div className="fq-mini-track">
+              <div className="fq-mini-fill" style={{ width: `${Math.min(100, (mine / Math.max(1, num(me.goal))) * 100)}%` }} />
+            </div>
+            <p className="fq-panel-left">
+              {left === 0 ? `ครบเป้าแล้ว: ${me.reward || "รับรางวัลได้"}` : `ขาดอีก ${fmt(left)} ดาว จะได้ ${me.reward || "รางวัลประจำรอบ"}`}
+            </p>
+
+            {isAdmin && (
+              <div className="fq-tabs" role="tablist">
+                {[["mine", "งานของฉัน"],
+                  ["review", `ตรวจงาน${kid ? kid.name : "เด็ก"}${kidQueue.length ? ` (${kidQueue.length})` : ""}`],
+                  ["maid", `ตรวจงานแม่บ้าน${maidQueue.length ? ` (${maidQueue.length})` : ""}`],
+                  ["stats", "แดชบอร์ดสถิติ"], ["manage", "จัดการสมาชิก"], ["audit", "ประวัติย้อนกลับ"]
+                ].map(([k, label]) => (
+                  <button key={k} role="tab" aria-selected={tab === k}
+                    className={`fq-tab ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{label}</button>
+                ))}
+              </div>
+            )}
+
+            {(!isAdmin || tab === "mine") && (
+              <div className="fq-tasks">
+                {myTasks.length === 0 && <p className="fq-empty">ยังไม่มีภารกิจ ให้ผู้ดูแลเพิ่มให้ในแท็บจัดการสมาชิก</p>}
+                {myTasks.map((t) => (
+                  <TaskCard key={t.id} task={t} user={me}
+                    onSubmit={submitTask} onCancel={cancelTask} onFinish={finishTask} />
+                ))}
+              </div>
+            )}
+
+            {isAdmin && tab === "review" && (
+              <div className="fq-review">
+                {kidQueue.length === 0 ? <p className="fq-empty">ยังไม่มีงานรอตรวจ</p> : (
+                  <ul className="fq-queue">
+                    {kidQueue.map((t) => {
+                      const Ic = iconOf(t.icon);
+                      const owner = users.find((u) => u.id === t.owner);
+                      return (
+                        <li key={t.id} className="fq-row">
+                          <span className="fq-row-ic"><Ic size={22} strokeWidth={2.4} /></span>
+                          <span className="fq-row-text">
+                            <span className="fq-row-title">{t.title}</span>
+                            <span className="fq-row-sub">{owner.name} · {t.base} × {fmt(owner.mult)}x = {fmt(netStars(t.base, owner.mult))} ดาว</span>
+                          </span>
+                          <span className="fq-row-acts">
+                            <button className="fq-back" onClick={() => rejectTask(t)}>ให้ทำใหม่</button>
+                            <button className="fq-approve" onClick={(e) => approveTask(t, e.currentTarget)}>
+                              <Check size={20} strokeWidth={3} /> อนุมัติ
+                            </button>
+                          </span>
+                        </li>);
+                    })}
+                  </ul>)}
+
+                <h3 className="fq-h3">ดาวล่าสุดของทุกคน</h3>
+                <ul className="fq-history">
+                  {entries.slice(0, 8).map((e) => (
+                    <li key={e.id}>
+                      <span className="fq-hist-ic"><CheckCheck size={15} strokeWidth={2.6} /></span>
+                      <span className="fq-hist-who">{(users.find((u) => u.id === e.user_id) || {}).name || "-"}</span>
+                      <span className="fq-hist-title">{e.title}</span>
+                      <span className="fq-hist-star">+{fmt(e.stars)}<Star size={11} strokeWidth={0} fill="currentColor" /></span>
+                    </li>))}
+                </ul>
+                <button className="fq-reset" onClick={doReset}>
+                  <RotateCcw size={16} strokeWidth={2.6} /> เริ่มรอบใหม่ (ล้างดาวทั้งหมด)
+                </button>
+              </div>
+            )}
+
+            {isAdmin && tab === "maid" && (
+              <div className="fq-review">
+                <div className="fq-ratehead">
+                  <span className="fq-ratehead-num">{rate}%</span>
+                  <span className="fq-ratehead-txt">อัตราความสำเร็จ (เป้า {target}%) · ผ่าน {passedMaid.length}/{assigned} งาน</span>
+                </div>
+                {maidQueue.length === 0 ? <p className="fq-empty">ยังไม่มีงานของพี่แม่บ้านรอประเมิน</p> : (
+                  <ul className="fq-queue">{maidQueue.map((t) => <RateRow key={t.id} task={t} onRate={rateMaid} />)}</ul>)}
+
+                <h3 className="fq-h3">สรุปค่าตอบแทนสัปดาห์นี้</h3>
+                <div className="fq-wage">
+                  <div className="fq-wage-line"><span>งานที่ผ่านเกณฑ์ (3 ดาวขึ้นไป)</span><span>{passedMaid.length} งาน · {fmt(maidStars)} ดาวงาน</span></div>
+                  <div className="fq-wage-line"><span>ค่าตอบแทนงาน ({settings.wage_per_star} บาท/ดาวงาน)</span><span>{baht(wageBase)} บาท</span></div>
+                  <div className="fq-wage-line"><span>โบนัสงานเรียบร้อย (5 ดาว × {settings.bonus_per_five} บาท)</span><span>{baht(wageBonus)} บาท</span></div>
+                  <div className="fq-wage-total"><span>รวมที่ต้องจ่าย</span><span>{baht(wageBase + wageBonus)} บาท</span></div>
+                  <div className="fq-wage-status">
+                    <span className={`fq-pill ${settings.paid ? "paid" : "pending"}`}>
+                      <Wallet size={15} strokeWidth={2.6} /> {settings.paid ? "จ่ายแล้ว (Paid)" : "รอจ่าย (Pending)"}
+                    </span>
+                    <button className={`fq-pay ${settings.paid ? "undo" : ""}`} onClick={(e) => togglePaid(e.currentTarget)}>
+                      {settings.paid ? "ย้อนกลับเป็นรอจ่าย" : "บันทึกว่าจ่ายแล้ว"}
+                    </button>
+                  </div>
+                </div>
+
+                <h3 className="fq-h3">ผลประเมินล่าสุด</h3>
+                <ul className="fq-history">
+                  {maidLog.slice(0, 8).map((e) => (
+                    <li key={e.id}>
+                      <span className={`fq-hist-ic ${e.rating >= 3 ? "" : "bad"}`}>
+                        {e.rating >= 3 ? <CheckCheck size={15} strokeWidth={2.6} /> : <AlertTriangle size={15} strokeWidth={2.6} />}
+                      </span>
+                      <span className="fq-hist-title">{e.title}</span>
+                      <span className="fq-hist-star">{e.rating}<Star size={11} strokeWidth={0} fill="currentColor" /></span>
+                    </li>))}
+                </ul>
+              </div>
+            )}
+
+            {isAdmin && tab === "stats" && <StatsTab span={span} setSpan={setSpan} stats={stats} />}
+
+            {isAdmin && tab === "manage" && (
+              <ManageTab users={users} tasks={tasks} settings={settings} meId={me.id}
+                onAddTask={addTask} onRemoveTask={removeTask} onAddUser={addUser}
+                onSaveUser={saveUser} onRemoveUser={removeUser} onSavePin={savePin} />
+            )}
+
+            {isAdmin && tab === "audit" && (
+              <div className="fq-review">
+                <h3 className="fq-h3" style={{ marginTop: 0 }}>ประวัติการทำงานย้อนกลับ</h3>
+                {audit.length === 0 ? <p className="fq-empty">ยังไม่มีประวัติ</p> : (
+                  <ul className="fq-audit">
+                    {audit.map((a) => (
+                      <li key={a.id}>
+                        <span className="fq-audit-time">{thDate(a.ts)}</span>
+                        <span className="fq-audit-actor">{a.actor}</span>
+                        <span className="fq-audit-text">{a.text}</span>
+                      </li>))}
+                  </ul>)}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+
+      <Confetti bits={bits} />
+      {toast && <div className="fq-toast" role="status"><Smile size={18} strokeWidth={2.6} />{toast}</div>}
+
+      {pinFor && (
+        <PinPad name={(users.find((u) => u.id === pinFor) || {}).name} pin={pin} error={pinErr}
+          onDigit={tapPin} onBack={() => { setPin((p) => p.slice(0, -1)); setPinErr(false); }}
+          onClose={() => setPinFor(null)} />
+      )}
+
+      {party && (
+        <div className="fq-modal" role="dialog">
+          <div className="fq-party-card">
+            <PartyPopper size={48} strokeWidth={2.2} className="fq-party-ic" />
+            <p className="fq-party-title">ครบ {houseGoal} ดาวทั้งบ้าน!</p>
+            <p className="fq-party-body">ทุกคนช่วยกันจนครบเป้าหมายรวมของรอบนี้ ถึงเวลา{settings.family_reward}</p>
+            <button className="fq-party-btn" onClick={(e) => { setParty(false); burst(e.currentTarget, 26); }}>เย้!</button>
+          </div>
+        </div>)}
+    </div>
+  );
+}
+
+function Splash({ text }) {
+  return (
+    <div className="fq-root">
+      <div className="fq-loading"><Sparkles size={28} strokeWidth={2.4} /> {text}</div>
+    </div>
+  );
+}
+
+createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+</body>
+</html>
