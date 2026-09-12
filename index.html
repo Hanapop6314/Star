@@ -395,14 +395,18 @@ function SignIn() {
     const [sent, setSent] = useState(false);
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState("");
+    const clean = (v) => String(v || "").replace(/[\s\u00A0\u200B-\u200D\uFEFF]/g, "").toLowerCase();
     const send = async () => {
-        if (!email.trim())
+        const addr = clean(email);
+        if (!/^[^@]+@[^@.]+\.[^@]+$/.test(addr)) {
+            setErr("รูปแบบอีเมลไม่ถูกต้อง ลองพิมพ์ใหม่ทีละตัวโดยไม่ใช้การเติมคำอัตโนมัติ");
             return;
+        }
         setBusy(true);
         setErr("");
         const { error } = await supabase.auth.signInWithOtp({
-            email: email.trim(),
-            options: { emailRedirectTo: window.location.origin },
+            email: addr,
+            options: { emailRedirectTo: window.location.href.split("#")[0].split("?")[0] },
         });
         setBusy(false);
         if (error)
@@ -418,13 +422,13 @@ function SignIn() {
                 React.createElement("p", { className: "fq-signin-sub" },
                     React.createElement(Check, { size: 16, strokeWidth: 2.8 }),
                     " \u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E44\u0E1B\u0E17\u0E35\u0E48 ",
-                    email,
+                    clean(email),
                     " \u0E41\u0E25\u0E49\u0E27"),
                 React.createElement("p", { className: "fq-signin-hint" }, "\u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E43\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E41\u0E25\u0E49\u0E27\u0E01\u0E14\u0E25\u0E34\u0E07\u0E01\u0E4C \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E08\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E44\u0E27\u0E49 \u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19\u0E0B\u0E49\u0E33\u0E17\u0E38\u0E01\u0E27\u0E31\u0E19"))) : (React.createElement(React.Fragment, null,
                 React.createElement("p", { className: "fq-signin-sub" }, "\u0E43\u0E2A\u0E48\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E23\u0E32\u0E22\u0E0A\u0E37\u0E48\u0E2D\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19 \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E43\u0E2B\u0E49"),
                 React.createElement("label", { className: "fq-field" },
                     React.createElement("span", null, "\u0E2D\u0E35\u0E40\u0E21\u0E25"),
-                    React.createElement("input", { className: "fq-input", type: "email", inputMode: "email", autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), placeholder: "dad@example.com" })),
+                    React.createElement("input", { className: "fq-input", type: "email", inputMode: "email", autoComplete: "email", autoCapitalize: "none", autoCorrect: "off", spellCheck: false, value: email, onChange: (e) => setEmail(e.target.value), placeholder: "dad@example.com" })),
                 React.createElement("button", { className: "fq-primary", onClick: send, disabled: busy },
                     React.createElement(Mail, { size: 18, strokeWidth: 2.6 }),
                     " ",
