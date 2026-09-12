@@ -272,8 +272,20 @@ body { margin: 0; }
 @media (prefers-reduced-motion: reduce){.fq-root *,.fq-bit{animation:none!important;transition:none!important;}}
 
 .boot{color:#FFF6E5;font-family:system-ui,sans-serif;text-align:center;padding:22vh 20px;font-size:16px;background:#241B5E;min-height:100vh;margin:0;}
-.boot small{display:block;margin-top:10px;opacity:.7;font-size:13px;}
+.boot small{display:block;margin-top:10px;opacity:.75;font-size:13px;line-height:1.5;}
 </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "lucide-react": "https://esm.sh/lucide-react@0.383.0?external=react",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.45.0"
+  }
+}
+</script>
 </head>
 <body style="background:#241B5E">
 <div id="root"><div class="boot">กำลังโหลดสมุดดาว...<small id="boot-msg"></small></div></div>
@@ -288,10 +300,10 @@ window.addEventListener('unhandledrejection', function (e) {
 });
 </script>
 <script type="module">
-import React from "https://esm.sh/react@18.3.1";
-import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import * as Lucide from "https://esm.sh/lucide-react@0.383.0?external=react";
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { createClient } from "@supabase/supabase-js";
+import * as Lucide from "lucide-react";
 /* ===================== ตั้งค่า Supabase (แก้ 2 บรรทัดนี้) ===================== */
 const SUPABASE_URL = "https://pwoibgpqkycqfchofznx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Tp_Mvw7HqdpW2jD9VK5OZw_hS_Gd0eD";
