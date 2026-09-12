@@ -309,7 +309,7 @@ const SUPABASE_URL = "https://pwoibgpqkycqfchofznx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Tp_Mvw7HqdpW2jD9VK5OZw_hS_Gd0eD";
 /* ========================================================================== */
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
-const { Star, Heart, Sparkles, Clock, Check, CheckCheck, Undo2, Gift, Plus, Trash, BedDouble, Shirt, Brush, Trash2, Sprout, Fish, Lightbulb, ShowerHead, Droplets, UtensilsCrossed, Footprints, PanelsTopLeft, ListChecks, ShieldCheck, Smile, Armchair, Lock, Delete, X, RotateCcw, Users, Pencil, Square, SquareCheck, Wallet, AlertTriangle, BadgeCheck, BarChart3, TrendingUp, TrendingDown, UserPlus, Save, KeyRound, PartyPopper, LogOut, Mail } = Lucide;
+const { Star, Heart, Sparkles, Clock, Check, CheckCheck, Undo2, Gift, Plus, Trash, BedDouble, Shirt, Brush, Trash2, Sprout, Fish, Lightbulb, ShowerHead, Droplets, UtensilsCrossed, Footprints, PanelsTopLeft, ListChecks, ShieldCheck, Smile, Armchair, Lock, Delete, X, RotateCcw, Users, Pencil, Square, SquareCheck, Wallet, AlertTriangle, BadgeCheck, BarChart3, TrendingUp, TrendingDown, UserPlus, Save, KeyRound, PartyPopper, LogOut, Mail, LogIn } = Lucide;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
@@ -390,16 +390,47 @@ function subscribeAll(onChange) {
 }
 const api = { fetchAll, logAudit, setStatus, addEntry, addMaidRating, addTask, deleteTask, addUser, updateUser, deleteUser, updateSettings, resetWeek, subscribeAll };
 /* ---------- components ---------- */
+const clean = (v) => String(v || "").replace(/[\s\u00A0\u200B-\u200D\uFEFF]/g, "").toLowerCase();
+const hint = (msg) => {
+    const m = String(msg || "");
+    if (/rate limit/i.test(m))
+        return "ส่งอีเมลเกินโควตาชั่วคราว ให้ใช้วิธีเข้าด้วยรหัสผ่านแทน";
+    if (/invalid login credentials/i.test(m))
+        return "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+    if (/invalid format/i.test(m))
+        return "รูปแบบอีเมลไม่ถูกต้อง ลองพิมพ์ใหม่ทีละตัว";
+    if (/email not confirmed/i.test(m))
+        return "อีเมลนี้ยังไม่ยืนยัน ให้สร้างผู้ใช้ใหม่ใน Supabase แบบ Auto Confirm";
+    return m;
+};
 function SignIn() {
+    const [mode, setMode] = useState("password");
     const [email, setEmail] = useState("");
+    const [pass, setPass] = useState("");
     const [sent, setSent] = useState(false);
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState("");
-    const clean = (v) => String(v || "").replace(/[\s\u00A0\u200B-\u200D\uFEFF]/g, "").toLowerCase();
-    const send = async () => {
-        const addr = clean(email);
-        if (!/^[^@]+@[^@.]+\.[^@]+$/.test(addr)) {
-            setErr("รูปแบบอีเมลไม่ถูกต้อง ลองพิมพ์ใหม่ทีละตัวโดยไม่ใช้การเติมคำอัตโนมัติ");
+    const addr = clean(email);
+    const valid = /^[^@]+@[^@.]+\.[^@]+$/.test(addr);
+    const withPassword = async () => {
+        if (!valid) {
+            setErr("รูปแบบอีเมลไม่ถูกต้อง");
+            return;
+        }
+        if (!pass) {
+            setErr("ใส่รหัสผ่านด้วย");
+            return;
+        }
+        setBusy(true);
+        setErr("");
+        const { error } = await supabase.auth.signInWithPassword({ email: addr, password: pass });
+        setBusy(false);
+        if (error)
+            setErr(hint(error.message));
+    };
+    const withLink = async () => {
+        if (!valid) {
+            setErr("รูปแบบอีเมลไม่ถูกต้อง");
             return;
         }
         setBusy(true);
@@ -410,7 +441,7 @@ function SignIn() {
         });
         setBusy(false);
         if (error)
-            setErr(error.message);
+            setErr(hint(error.message));
         else
             setSent(true);
     };
@@ -421,20 +452,28 @@ function SignIn() {
             sent ? (React.createElement(React.Fragment, null,
                 React.createElement("p", { className: "fq-signin-sub" },
                     React.createElement(Check, { size: 16, strokeWidth: 2.8 }),
-                    " \u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E44\u0E1B\u0E17\u0E35\u0E48 ",
-                    clean(email),
+                    " \u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E44\u0E1B\u0E17\u0E35\u0E48 ",
+                    addr,
                     " \u0E41\u0E25\u0E49\u0E27"),
-                React.createElement("p", { className: "fq-signin-hint" }, "\u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E43\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E41\u0E25\u0E49\u0E27\u0E01\u0E14\u0E25\u0E34\u0E07\u0E01\u0E4C \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E08\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E44\u0E27\u0E49 \u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19\u0E0B\u0E49\u0E33\u0E17\u0E38\u0E01\u0E27\u0E31\u0E19"))) : (React.createElement(React.Fragment, null,
-                React.createElement("p", { className: "fq-signin-sub" }, "\u0E43\u0E2A\u0E48\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E23\u0E32\u0E22\u0E0A\u0E37\u0E48\u0E2D\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19 \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E43\u0E2B\u0E49"),
+                React.createElement("p", { className: "fq-signin-hint" }, "\u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E43\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E41\u0E25\u0E49\u0E27\u0E01\u0E14\u0E25\u0E34\u0E07\u0E01\u0E4C \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E08\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E44\u0E27\u0E49"),
+                React.createElement("button", { className: "fq-ghost", onClick: () => setSent(false) }, "\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E1B\u0E2B\u0E19\u0E49\u0E32\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19"))) : (React.createElement(React.Fragment, null,
+                React.createElement("p", { className: "fq-signin-sub" }, mode === "password" ? "เข้าใช้งานด้วยอีเมลและรหัสผ่านของบ้าน" : "ระบบจะส่งลิงก์เข้าใช้งานไปที่อีเมล"),
                 React.createElement("label", { className: "fq-field" },
                     React.createElement("span", null, "\u0E2D\u0E35\u0E40\u0E21\u0E25"),
-                    React.createElement("input", { className: "fq-input", type: "email", inputMode: "email", autoComplete: "email", autoCapitalize: "none", autoCorrect: "off", spellCheck: false, value: email, onChange: (e) => setEmail(e.target.value), placeholder: "dad@example.com" })),
-                React.createElement("button", { className: "fq-primary", onClick: send, disabled: busy },
+                    React.createElement("input", { className: "fq-input", type: "email", inputMode: "email", autoComplete: "username", autoCapitalize: "none", autoCorrect: "off", spellCheck: false, value: email, onChange: (e) => setEmail(e.target.value), placeholder: "dad@example.com" })),
+                mode === "password" && (React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E23\u0E2B\u0E31\u0E2A\u0E1C\u0E48\u0E32\u0E19"),
+                    React.createElement("input", { className: "fq-input", type: "password", autoComplete: "current-password", value: pass, onChange: (e) => setPass(e.target.value), placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }))),
+                mode === "password" ? (React.createElement("button", { className: "fq-primary", onClick: withPassword, disabled: busy },
+                    React.createElement(LogIn, { size: 18, strokeWidth: 2.6 }),
+                    " ",
+                    busy ? "กำลังเข้า..." : "เข้าใช้งาน")) : (React.createElement("button", { className: "fq-primary", onClick: withLink, disabled: busy },
                     React.createElement(Mail, { size: 18, strokeWidth: 2.6 }),
                     " ",
-                    busy ? "กำลังส่ง..." : "ส่งลิงก์เข้าใช้งาน"),
+                    busy ? "กำลังส่ง..." : "ส่งลิงก์เข้าใช้งาน")),
                 err && React.createElement("p", { className: "fq-signin-err" }, err),
-                React.createElement("p", { className: "fq-signin-hint" }, "\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E17\u0E35\u0E48\u0E44\u0E21\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E23\u0E32\u0E22\u0E0A\u0E37\u0E48\u0E2D\u0E08\u0E30\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19\u0E44\u0E14\u0E49\u0E41\u0E15\u0E48\u0E21\u0E2D\u0E07\u0E44\u0E21\u0E48\u0E40\u0E2B\u0E47\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19"))))));
+                React.createElement("button", { className: "fq-ghost", onClick: () => { setErr(""); setMode(mode === "password" ? "link" : "password"); } }, mode === "password" ? "เข้าด้วยลิงก์ทางอีเมลแทน" : "เข้าด้วยรหัสผ่านแทน"),
+                React.createElement("p", { className: "fq-signin-hint" }, "\u0E40\u0E02\u0E49\u0E32\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27\u0E15\u0E48\u0E2D\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07 \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E08\u0E33\u0E44\u0E27\u0E49\u0E43\u0E2B\u0E49 \u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19\u0E0B\u0E49\u0E33\u0E17\u0E38\u0E01\u0E27\u0E31\u0E19"))))));
 }
 function Gauge({ value, target }) {
     const R = 46, C = 2 * Math.PI * R;
