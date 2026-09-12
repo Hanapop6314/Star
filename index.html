@@ -271,1099 +271,1011 @@ body { margin: 0; }
 .fq-party-btn:active{transform:translateY(4px);box-shadow:0 0 0 #D49F00;}
 @media (prefers-reduced-motion: reduce){.fq-root *,.fq-bit{animation:none!important;transition:none!important;}}
 
-.boot{color:#FFF6E5;font-family:system-ui,sans-serif;text-align:center;padding:22vh 20px;font-size:16px;
-background:#241B5E;min-height:100vh;margin:0;}
+.boot{color:#FFF6E5;font-family:system-ui,sans-serif;text-align:center;padding:22vh 20px;font-size:16px;background:#241B5E;min-height:100vh;margin:0;}
+.boot small{display:block;margin-top:10px;opacity:.7;font-size:13px;}
 </style>
 </head>
 <body style="background:#241B5E">
-<div id="root"><div class="boot">กำลังโหลดสมุดดาว...</div></div>
-
-<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
-<script type="text/babel" data-type="module" data-presets="react">
+<div id="root"><div class="boot">กำลังโหลดสมุดดาว...<small id="boot-msg"></small></div></div>
+<script>
+window.addEventListener('error', function (e) {
+  var el = document.getElementById('boot-msg');
+  if (el) el.textContent = 'ผิดพลาด: ' + (e.message || e.type);
+});
+window.addEventListener('unhandledrejection', function (e) {
+  var el = document.getElementById('boot-msg');
+  if (el) el.textContent = 'ผิดพลาด: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+});
+</script>
+<script type="module">
 import React from "https://esm.sh/react@18.3.1";
 import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import * as Lucide from "https://esm.sh/lucide-react@0.383.0?external=react";
-
 /* ===================== ตั้งค่า Supabase (แก้ 2 บรรทัดนี้) ===================== */
 const SUPABASE_URL = "https://pwoibgpqkycqfchofznx.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Tp_Mvw7HqdpW2jD9VK5OZw_hS_Gd0eD";
 /* ========================================================================== */
-
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 const { Star, Heart, Sparkles, Clock, Check, CheckCheck, Undo2, Gift, Plus, Trash, BedDouble, Shirt, Brush, Trash2, Sprout, Fish, Lightbulb, ShowerHead, Droplets, UtensilsCrossed, Footprints, PanelsTopLeft, ListChecks, ShieldCheck, Smile, Armchair, Lock, Delete, X, RotateCcw, Users, Pencil, Square, SquareCheck, Wallet, AlertTriangle, BadgeCheck, BarChart3, TrendingUp, TrendingDown, UserPlus, Save, KeyRound, PartyPopper, LogOut, Mail } = Lucide;
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
-
 /* ---------- util ---------- */
 const DAY = 86400000;
-
 const ROLES = {
-  admin:      { label: "Super Admin", short: "จัดการระบบ อนุมัติงาน ประเมินแม่บ้าน", pin: true },
-  supervised: { label: "Supervised", short: "ส่งงานรอผู้ดูแลอนุมัติ", pin: false },
-  standard:   { label: "Standard", short: "ทำเสร็จรับดาวทันที ตัวหนังสือใหญ่", pin: false },
-  staff:      { label: "Staff", short: "เช็กลิสต์งานและค่าตอบแทน", pin: false },
+    admin: { label: "Super Admin", short: "จัดการระบบ อนุมัติงาน ประเมินแม่บ้าน", pin: true },
+    supervised: { label: "Supervised", short: "ส่งงานรอผู้ดูแลอนุมัติ", pin: false },
+    standard: { label: "Standard", short: "ทำเสร็จรับดาวทันที ตัวหนังสือใหญ่", pin: false },
+    staff: { label: "Staff", short: "เช็กลิสต์งานและค่าตอบแทน", pin: false },
 };
-
 const ICONS = {
-  brush: Brush, bed: BedDouble, shirt: Shirt, sprout: Sprout, fish: Fish,
-  bulb: Lightbulb, shower: ShowerHead, trash: Trash2, drop: Droplets,
-  kitchen: UtensilsCrossed, floor: Footprints, glass: PanelsTopLeft, list: ListChecks,
+    brush: Brush, bed: BedDouble, shirt: Shirt, sprout: Sprout, fish: Fish,
+    bulb: Lightbulb, shower: ShowerHead, trash: Trash2, drop: Droplets,
+    kitchen: UtensilsCrossed, floor: Footprints, glass: PanelsTopLeft, list: ListChecks,
 };
 const iconOf = (k) => ICONS[k] || ListChecks;
-
 const HUES = ["coral", "gold", "sky", "grape", "teal"];
 const TONES = ["#FFD028", "#FF6B8A", "#3DE0B0", "#56C7FF", "#FFFFFF", "#C08BFF"];
-
 const num = (v) => Number(v) || 0;
 const fmt = (n) => (Number.isInteger(Number(n)) ? String(Number(n)) : Number(n).toFixed(1));
 const baht = (n) => Math.round(Number(n) || 0).toLocaleString("th-TH");
 const netStars = (base, mult) => Math.round(num(base) * num(mult) * 10) / 10;
-
 const startOfWeek = (t) => {
-  const d = new Date(t); const off = (d.getDay() + 6) % 7;
-  d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - off); return d.getTime();
+    const d = new Date(t);
+    const off = (d.getDay() + 6) % 7;
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - off);
+    return d.getTime();
 };
 const startOfMonth = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(1); return d.getTime(); };
 const prevMonthStart = (t) => { const d = new Date(startOfMonth(t)); d.setMonth(d.getMonth() - 1); return d.getTime(); };
 const ms = (ts) => new Date(ts).getTime();
 const thDate = (ts) => new Date(ts).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const thDay = (ts) => new Date(ts).toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" });
-
 const pickKind = () => { const r = Math.random(); return r > 0.5 ? "star" : r > 0.25 ? "heart" : "dot"; };
-
 /* ---------- api ---------- */
-const unwrap = (res) => { if (res.error) throw res.error; return res.data; };
-
-function fetchAll() {
-  const [users, tasks, entries, maidLog, audit, settings] = await Promise.all([
-    supabase.from("users").select("*").order("sort"),
-    supabase.from("tasks").select("*").order("created_at"),
-    supabase.from("entries").select("*").order("ts", { ascending: false }).limit(2000),
-    supabase.from("maid_log").select("*").order("ts", { ascending: false }).limit(1000),
-    supabase.from("audit").select("*").order("ts", { ascending: false }).limit(150),
-    supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
-  ]);
-  return {
-    users: unwrap(users) || [],
-    tasks: unwrap(tasks) || [],
-    entries: unwrap(entries) || [],
-    maidLog: unwrap(maidLog) || [],
-    audit: unwrap(audit) || [],
-    settings: unwrap(settings) || {},
-  };
+const unwrap = (res) => { if (res.error)
+    throw res.error; return res.data; };
+async function fetchAll() {
+    const [users, tasks, entries, maidLog, audit, settings] = await Promise.all([
+        supabase.from("users").select("*").order("sort"),
+        supabase.from("tasks").select("*").order("created_at"),
+        supabase.from("entries").select("*").order("ts", { ascending: false }).limit(2000),
+        supabase.from("maid_log").select("*").order("ts", { ascending: false }).limit(1000),
+        supabase.from("audit").select("*").order("ts", { ascending: false }).limit(150),
+        supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
+    ]);
+    return {
+        users: unwrap(users) || [],
+        tasks: unwrap(tasks) || [],
+        entries: unwrap(entries) || [],
+        maidLog: unwrap(maidLog) || [],
+        audit: unwrap(audit) || [],
+        settings: unwrap(settings) || {},
+    };
 }
-
-const logAudit = (actor, text) =>
-  supabase.from("audit").insert({ actor, text }).then(unwrap);
-
-const setStatus = (taskId, status) =>
-  supabase.from("tasks").update({ status }).eq("id", taskId).then(unwrap);
-
-const addEntry = (user, task) =>
-  supabase.from("entries").insert({
+const logAudit = (actor, text) => supabase.from("audit").insert({ actor, text }).then(unwrap);
+const setStatus = (taskId, status) => supabase.from("tasks").update({ status }).eq("id", taskId).then(unwrap);
+const addEntry = (user, task) => supabase.from("entries").insert({
     user_id: user.id, title: task.title, base: task.base,
     mult: user.mult, stars: netStars(task.base, user.mult),
-  }).then(unwrap);
-
-const addMaidRating = (task, rating) =>
-  supabase.from("maid_log").insert({ title: task.title, base: task.base, rating }).then(unwrap);
-
+}).then(unwrap);
+const addMaidRating = (task, rating) => supabase.from("maid_log").insert({ title: task.title, base: task.base, rating }).then(unwrap);
 const addTask = (task) => supabase.from("tasks").insert(task).then(unwrap);
 const deleteTask = (id) => supabase.from("tasks").delete().eq("id", id).then(unwrap);
-
 const addUser = (user) => supabase.from("users").insert(user).then(unwrap);
 const updateUser = (id, patch) => supabase.from("users").update(patch).eq("id", id).then(unwrap);
 const deleteUser = (id) => supabase.from("users").delete().eq("id", id).then(unwrap);
-
-const updateSettings = (patch) =>
-  supabase.from("settings").update(patch).eq("id", 1).then(unwrap);
-
+const updateSettings = (patch) => supabase.from("settings").update(patch).eq("id", 1).then(unwrap);
 const resetWeek = () => supabase.rpc("reset_week").then(unwrap);
-
 function subscribeAll(onChange) {
-  const channel = supabase
-    .channel("fqh-live")
-    .on("postgres_changes", { event: "*", schema: "public" }, onChange)
-    .subscribe();
-  return () => supabase.removeChannel(channel);
+    const channel = supabase
+        .channel("fqh-live")
+        .on("postgres_changes", { event: "*", schema: "public" }, onChange)
+        .subscribe();
+    return () => supabase.removeChannel(channel);
 }
 const api = { fetchAll, logAudit, setStatus, addEntry, addMaidRating, addTask, deleteTask, addUser, updateUser, deleteUser, updateSettings, resetWeek, subscribeAll };
-
 /* ---------- components ---------- */
 function SignIn() {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-
-  const send = async () => {
-    if (!email.trim()) return;
-    setBusy(true); setErr("");
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { emailRedirectTo: window.location.origin },
-    });
-    setBusy(false);
-    if (error) setErr(error.message);
-    else setSent(true);
-  };
-
-  return (
-    <div className="fq-root">
-      <div className="fq-signin">
-        <Sparkles size={34} strokeWidth={2.3} className="fq-signin-ic" />
-        <h1 className="fq-title">ภารกิจดาวของบ้านเรา</h1>
-        {sent ? (
-          <>
-            <p className="fq-signin-sub"><Check size={16} strokeWidth={2.8} /> ส่งลิงก์เข้าใช้งานไปที่ {email} แล้ว</p>
-            <p className="fq-signin-hint">เปิดอีเมลในเครื่องนี้แล้วกดลิงก์ ระบบจะจำเครื่องนี้ไว้ ไม่ต้องล็อกอินซ้ำทุกวัน</p>
-          </>
-        ) : (
-          <>
-            <p className="fq-signin-sub">ใส่อีเมลที่อยู่ในรายชื่อของบ้าน ระบบจะส่งลิงก์เข้าใช้งานให้</p>
-            <label className="fq-field">
-              <span>อีเมล</span>
-              <input className="fq-input" type="email" inputMode="email" autoComplete="email"
-                value={email} onChange={(e) => setEmail(e.target.value)} placeholder="dad@example.com" />
-            </label>
-            <button className="fq-primary" onClick={send} disabled={busy}>
-              <Mail size={18} strokeWidth={2.6} /> {busy ? "กำลังส่ง..." : "ส่งลิงก์เข้าใช้งาน"}
-            </button>
-            {err && <p className="fq-signin-err">{err}</p>}
-            <p className="fq-signin-hint">อีเมลที่ไม่อยู่ในรายชื่อจะล็อกอินได้แต่มองไม่เห็นข้อมูลของบ้าน</p>
-          </>
-        )}
-      </div>
-    </div>
-  );
+    const [email, setEmail] = useState("");
+    const [sent, setSent] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState("");
+    const send = async () => {
+        if (!email.trim())
+            return;
+        setBusy(true);
+        setErr("");
+        const { error } = await supabase.auth.signInWithOtp({
+            email: email.trim(),
+            options: { emailRedirectTo: window.location.origin },
+        });
+        setBusy(false);
+        if (error)
+            setErr(error.message);
+        else
+            setSent(true);
+    };
+    return (React.createElement("div", { className: "fq-root" },
+        React.createElement("div", { className: "fq-signin" },
+            React.createElement(Sparkles, { size: 34, strokeWidth: 2.3, className: "fq-signin-ic" }),
+            React.createElement("h1", { className: "fq-title" }, "\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E14\u0E32\u0E27\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19\u0E40\u0E23\u0E32"),
+            sent ? (React.createElement(React.Fragment, null,
+                React.createElement("p", { className: "fq-signin-sub" },
+                    React.createElement(Check, { size: 16, strokeWidth: 2.8 }),
+                    " \u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E44\u0E1B\u0E17\u0E35\u0E48 ",
+                    email,
+                    " \u0E41\u0E25\u0E49\u0E27"),
+                React.createElement("p", { className: "fq-signin-hint" }, "\u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E43\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E41\u0E25\u0E49\u0E27\u0E01\u0E14\u0E25\u0E34\u0E07\u0E01\u0E4C \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E08\u0E33\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E44\u0E27\u0E49 \u0E44\u0E21\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19\u0E0B\u0E49\u0E33\u0E17\u0E38\u0E01\u0E27\u0E31\u0E19"))) : (React.createElement(React.Fragment, null,
+                React.createElement("p", { className: "fq-signin-sub" }, "\u0E43\u0E2A\u0E48\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E17\u0E35\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E23\u0E32\u0E22\u0E0A\u0E37\u0E48\u0E2D\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19 \u0E23\u0E30\u0E1A\u0E1A\u0E08\u0E30\u0E2A\u0E48\u0E07\u0E25\u0E34\u0E07\u0E01\u0E4C\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E43\u0E2B\u0E49"),
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E2D\u0E35\u0E40\u0E21\u0E25"),
+                    React.createElement("input", { className: "fq-input", type: "email", inputMode: "email", autoComplete: "email", value: email, onChange: (e) => setEmail(e.target.value), placeholder: "dad@example.com" })),
+                React.createElement("button", { className: "fq-primary", onClick: send, disabled: busy },
+                    React.createElement(Mail, { size: 18, strokeWidth: 2.6 }),
+                    " ",
+                    busy ? "กำลังส่ง..." : "ส่งลิงก์เข้าใช้งาน"),
+                err && React.createElement("p", { className: "fq-signin-err" }, err),
+                React.createElement("p", { className: "fq-signin-hint" }, "\u0E2D\u0E35\u0E40\u0E21\u0E25\u0E17\u0E35\u0E48\u0E44\u0E21\u0E48\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E23\u0E32\u0E22\u0E0A\u0E37\u0E48\u0E2D\u0E08\u0E30\u0E25\u0E47\u0E2D\u0E01\u0E2D\u0E34\u0E19\u0E44\u0E14\u0E49\u0E41\u0E15\u0E48\u0E21\u0E2D\u0E07\u0E44\u0E21\u0E48\u0E40\u0E2B\u0E47\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19"))))));
 }
-
 function Gauge({ value, target }) {
-  const R = 46, C = 2 * Math.PI * R;
-  const fill = Math.min(100, Math.max(0, value));
-  const ok = value >= target;
-  const rad = ((target / 100) * 360 - 90) * Math.PI / 180;
-  return (
-    <svg viewBox="0 0 120 120" className="fq-gauge" role="img" aria-label={`อัตราความสำเร็จ ${value}%`}>
-      <circle cx="60" cy="60" r={R} fill="none" stroke="#DDE5EC" strokeWidth="12" />
-      <circle cx="60" cy="60" r={R} fill="none" stroke={ok ? "#12A87B" : "#E0912B"} strokeWidth="12"
-        strokeLinecap="round" strokeDasharray={`${(fill / 100) * C} ${C}`}
-        transform="rotate(-90 60 60)" className="fq-gauge-arc" />
-      <circle cx={60 + Math.cos(rad) * R} cy={60 + Math.sin(rad) * R} r="4.5" fill="#0F2C3F" />
-      <text x="60" y="58" textAnchor="middle" className="fq-gauge-num">{value}%</text>
-      <text x="60" y="76" textAnchor="middle" className="fq-gauge-cap">เป้า {target}%</text>
-    </svg>
-  );
+    const R = 46, C = 2 * Math.PI * R;
+    const fill = Math.min(100, Math.max(0, value));
+    const ok = value >= target;
+    const rad = ((target / 100) * 360 - 90) * Math.PI / 180;
+    return (React.createElement("svg", { viewBox: "0 0 120 120", className: "fq-gauge", role: "img", "aria-label": `อัตราความสำเร็จ ${value}%` },
+        React.createElement("circle", { cx: "60", cy: "60", r: R, fill: "none", stroke: "#DDE5EC", strokeWidth: "12" }),
+        React.createElement("circle", { cx: "60", cy: "60", r: R, fill: "none", stroke: ok ? "#12A87B" : "#E0912B", strokeWidth: "12", strokeLinecap: "round", strokeDasharray: `${(fill / 100) * C} ${C}`, transform: "rotate(-90 60 60)", className: "fq-gauge-arc" }),
+        React.createElement("circle", { cx: 60 + Math.cos(rad) * R, cy: 60 + Math.sin(rad) * R, r: "4.5", fill: "#0F2C3F" }),
+        React.createElement("text", { x: "60", y: "58", textAnchor: "middle", className: "fq-gauge-num" },
+            value,
+            "%"),
+        React.createElement("text", { x: "60", y: "76", textAnchor: "middle", className: "fq-gauge-cap" },
+            "\u0E40\u0E1B\u0E49\u0E32 ",
+            target,
+            "%")));
 }
-
 function TaskCard({ task, user, onSubmit, onCancel, onFinish }) {
-  const Icon = iconOf(task.icon);
-  const net = netStars(task.base, user.mult);
-  const supervised = user.role === "supervised";
-  return (
-    <article className={`fq-card ${task.status}`}>
-      <div className="fq-card-top">
-        <span className="fq-card-ic"><Icon size={24} strokeWidth={2.4} /></span>
-        <span className="fq-card-stars">
-          <Star size={15} strokeWidth={0} fill="currentColor" /><span>{fmt(net)} ดาว</span>
-        </span>
-      </div>
-      <h3 className="fq-card-title">{task.title}</h3>
-      <p className="fq-card-where">{task.place} · พื้นฐาน {task.base} × ตัวคูณ {fmt(user.mult)}x</p>
-
-      {task.status === "done" ? (
-        <div className="fq-done"><Check size={20} strokeWidth={3} /> ได้ดาวแล้ว</div>
-      ) : supervised ? (
-        task.status === "pending" ? (
-          <div className="fq-waitwrap">
-            <div className="fq-wait"><Clock size={18} strokeWidth={2.6} /> รอตรวจ</div>
-            <button className="fq-undo" onClick={() => onCancel(task)}>
-              <Undo2 size={16} strokeWidth={2.6} /> ยกเลิก
-            </button>
-          </div>
-        ) : (
-          <button className="fq-send" onClick={(e) => onSubmit(task, e.currentTarget)}>ส่งงาน</button>
-        )
-      ) : (
-        <button className="fq-finish" onClick={(e) => onFinish(task, e.currentTarget)}>
-          <Check size={20} strokeWidth={3} /> ทำเสร็จแล้ว รับดาว
-        </button>
-      )}
-    </article>
-  );
+    const Icon = iconOf(task.icon);
+    const net = netStars(task.base, user.mult);
+    const supervised = user.role === "supervised";
+    return (React.createElement("article", { className: `fq-card ${task.status}` },
+        React.createElement("div", { className: "fq-card-top" },
+            React.createElement("span", { className: "fq-card-ic" },
+                React.createElement(Icon, { size: 24, strokeWidth: 2.4 })),
+            React.createElement("span", { className: "fq-card-stars" },
+                React.createElement(Star, { size: 15, strokeWidth: 0, fill: "currentColor" }),
+                React.createElement("span", null,
+                    fmt(net),
+                    " \u0E14\u0E32\u0E27"))),
+        React.createElement("h3", { className: "fq-card-title" }, task.title),
+        React.createElement("p", { className: "fq-card-where" },
+            task.place,
+            " \u00B7 \u0E1E\u0E37\u0E49\u0E19\u0E10\u0E32\u0E19 ",
+            task.base,
+            " \u00D7 \u0E15\u0E31\u0E27\u0E04\u0E39\u0E13 ",
+            fmt(user.mult),
+            "x"),
+        task.status === "done" ? (React.createElement("div", { className: "fq-done" },
+            React.createElement(Check, { size: 20, strokeWidth: 3 }),
+            " \u0E44\u0E14\u0E49\u0E14\u0E32\u0E27\u0E41\u0E25\u0E49\u0E27")) : supervised ? (task.status === "pending" ? (React.createElement("div", { className: "fq-waitwrap" },
+            React.createElement("div", { className: "fq-wait" },
+                React.createElement(Clock, { size: 18, strokeWidth: 2.6 }),
+                " \u0E23\u0E2D\u0E15\u0E23\u0E27\u0E08"),
+            React.createElement("button", { className: "fq-undo", onClick: () => onCancel(task) },
+                React.createElement(Undo2, { size: 16, strokeWidth: 2.6 }),
+                " \u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"))) : (React.createElement("button", { className: "fq-send", onClick: (e) => onSubmit(task, e.currentTarget) }, "\u0E2A\u0E48\u0E07\u0E07\u0E32\u0E19"))) : (React.createElement("button", { className: "fq-finish", onClick: (e) => onFinish(task, e.currentTarget) },
+            React.createElement(Check, { size: 20, strokeWidth: 3 }),
+            " \u0E17\u0E33\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E41\u0E25\u0E49\u0E27 \u0E23\u0E31\u0E1A\u0E14\u0E32\u0E27"))));
 }
-
 function RateRow({ task, onRate }) {
-  const [hover, setHover] = useState(0);
-  const Ic = iconOf(task.icon);
-  return (
-    <li className="fq-row rate">
-      <span className="fq-row-ic staff"><Ic size={22} strokeWidth={2.4} /></span>
-      <span className="fq-row-text">
-        <span className="fq-row-title">{task.title}</span>
-        <span className="fq-row-sub">พี่แม่บ้านส่งมา · {task.base} ดาวงาน</span>
-      </span>
-      <span className="fq-rate">
-        <span className="fq-rate-label">ให้คะแนนคุณภาพ</span>
-        <span className="fq-rate-stars" onMouseLeave={() => setHover(0)}>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} className={`fq-rate-btn ${n <= hover ? "hot" : ""}`}
-              onMouseEnter={() => setHover(n)} onClick={() => onRate(task, n)} aria-label={`ให้ ${n} ดาว`}>
-              <Star size={26} strokeWidth={n <= hover ? 0 : 2} fill={n <= hover ? "currentColor" : "none"} />
-            </button>
-          ))}
-        </span>
-      </span>
-    </li>
-  );
+    const [hover, setHover] = useState(0);
+    const Ic = iconOf(task.icon);
+    return (React.createElement("li", { className: "fq-row rate" },
+        React.createElement("span", { className: "fq-row-ic staff" },
+            React.createElement(Ic, { size: 22, strokeWidth: 2.4 })),
+        React.createElement("span", { className: "fq-row-text" },
+            React.createElement("span", { className: "fq-row-title" }, task.title),
+            React.createElement("span", { className: "fq-row-sub" },
+                "\u0E1E\u0E35\u0E48\u0E41\u0E21\u0E48\u0E1A\u0E49\u0E32\u0E19\u0E2A\u0E48\u0E07\u0E21\u0E32 \u00B7 ",
+                task.base,
+                " \u0E14\u0E32\u0E27\u0E07\u0E32\u0E19")),
+        React.createElement("span", { className: "fq-rate" },
+            React.createElement("span", { className: "fq-rate-label" }, "\u0E43\u0E2B\u0E49\u0E04\u0E30\u0E41\u0E19\u0E19\u0E04\u0E38\u0E13\u0E20\u0E32\u0E1E"),
+            React.createElement("span", { className: "fq-rate-stars", onMouseLeave: () => setHover(0) }, [1, 2, 3, 4, 5].map((n) => (React.createElement("button", { key: n, className: `fq-rate-btn ${n <= hover ? "hot" : ""}`, onMouseEnter: () => setHover(n), onClick: () => onRate(task, n), "aria-label": `ให้ ${n} ดาว` },
+                React.createElement(Star, { size: 26, strokeWidth: n <= hover ? 0 : 2, fill: n <= hover ? "currentColor" : "none" }))))))));
 }
-
 function Confetti({ bits }) {
-  return (
-    <div className="fq-bits" aria-hidden="true">
-      {bits.map((p) => (
-        <span key={p.key} className={p.mode === "fall" ? "fq-bit fq-bit-fall" : "fq-bit"}
-          style={{
+    return (React.createElement("div", { className: "fq-bits", "aria-hidden": "true" }, bits.map((p) => (React.createElement("span", { key: p.key, className: p.mode === "fall" ? "fq-bit fq-bit-fall" : "fq-bit", style: {
             left: p.x, top: p.y, color: p.tone,
             "--dx": `${p.dx || 0}px`, "--dy": `${p.dy || 0}px`,
             "--drift": `${p.drift || 0}px`, "--rot": `${p.rot}deg`,
             animationDuration: `${p.life}ms`, animationDelay: `${p.delay || 0}ms`,
-          }}>
-          {p.kind === "star" ? <Star size={p.size} strokeWidth={0} fill="currentColor" />
-            : p.kind === "heart" ? <Heart size={p.size} strokeWidth={0} fill="currentColor" />
-              : <span className="fq-dotbit" style={{ width: p.size * 0.5, height: p.size * 0.7 }} />}
-        </span>
-      ))}
-    </div>
-  );
+        } }, p.kind === "star" ? React.createElement(Star, { size: p.size, strokeWidth: 0, fill: "currentColor" })
+        : p.kind === "heart" ? React.createElement(Heart, { size: p.size, strokeWidth: 0, fill: "currentColor" })
+            : React.createElement("span", { className: "fq-dotbit", style: { width: p.size * 0.5, height: p.size * 0.7 } }))))));
 }
-
 function PinPad({ name, pin, error, onDigit, onBack, onClose }) {
-  return (
-    <div className="fq-modal" role="dialog" aria-modal="true">
-      <div className={`fq-pin-card ${error ? "shake" : ""}`}>
-        <button className="fq-close" onClick={onClose} aria-label="ปิด"><X size={20} strokeWidth={2.6} /></button>
-        <Lock size={30} strokeWidth={2.4} className="fq-pin-ic" />
-        <p className="fq-pin-title">โปรไฟล์{name}</p>
-        <p className="fq-pin-sub">{error ? "รหัสไม่ถูก ลองอีกครั้ง" : "Super Admin · ใส่รหัส 4 หลัก"}</p>
-        <div className="fq-pin-dots">
-          {[0, 1, 2, 3].map((i) => (
-            <span key={i} className={`fq-pin-dot ${i < pin.length ? "on" : ""} ${error ? "bad" : ""}`} />
-          ))}
-        </div>
-        <div className="fq-pad">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-            <button key={n} className="fq-key" onClick={() => onDigit(String(n))}>{n}</button>
-          ))}
-          <span />
-          <button className="fq-key" onClick={() => onDigit("0")}>0</button>
-          <button className="fq-key ghost" onClick={onBack} aria-label="ลบ"><Delete size={22} strokeWidth={2.4} /></button>
-        </div>
-      </div>
-    </div>
-  );
+    return (React.createElement("div", { className: "fq-modal", role: "dialog", "aria-modal": "true" },
+        React.createElement("div", { className: `fq-pin-card ${error ? "shake" : ""}` },
+            React.createElement("button", { className: "fq-close", onClick: onClose, "aria-label": "\u0E1B\u0E34\u0E14" },
+                React.createElement(X, { size: 20, strokeWidth: 2.6 })),
+            React.createElement(Lock, { size: 30, strokeWidth: 2.4, className: "fq-pin-ic" }),
+            React.createElement("p", { className: "fq-pin-title" },
+                "\u0E42\u0E1B\u0E23\u0E44\u0E1F\u0E25\u0E4C",
+                name),
+            React.createElement("p", { className: "fq-pin-sub" }, error ? "รหัสไม่ถูก ลองอีกครั้ง" : "Super Admin · ใส่รหัส 4 หลัก"),
+            React.createElement("div", { className: "fq-pin-dots" }, [0, 1, 2, 3].map((i) => (React.createElement("span", { key: i, className: `fq-pin-dot ${i < pin.length ? "on" : ""} ${error ? "bad" : ""}` })))),
+            React.createElement("div", { className: "fq-pad" },
+                [1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (React.createElement("button", { key: n, className: "fq-key", onClick: () => onDigit(String(n)) }, n))),
+                React.createElement("span", null),
+                React.createElement("button", { className: "fq-key", onClick: () => onDigit("0") }, "0"),
+                React.createElement("button", { className: "fq-key ghost", onClick: onBack, "aria-label": "\u0E25\u0E1A" },
+                    React.createElement(Delete, { size: 22, strokeWidth: 2.4 }))))));
 }
-
 function StatsTab({ span, setSpan, stats }) {
-  const up = stats.growth >= 0;
-  return (
-    <div className="fq-review">
-      <div className="fq-segment">
-        <button className={`fq-seg ${span === "week" ? "on" : ""}`} onClick={() => setSpan("week")}>
-          สัปดาห์นี้ vs สัปดาห์ที่แล้ว
-        </button>
-        <button className={`fq-seg ${span === "month" ? "on" : ""}`} onClick={() => setSpan("month")}>
-          เดือนนี้ vs เดือนที่แล้ว
-        </button>
-      </div>
-
-      <div className="fq-statcard">
-        <div>
-          <p className="fq-stat-label">ดาวรวมทั้งบ้าน{span === "week" ? "สัปดาห์นี้" : "เดือนนี้"}</p>
-          <p className="fq-stat-num">{fmt(stats.total)} <span>ดาว</span></p>
-          <p className="fq-stat-prev">ช่วงก่อนหน้า {fmt(stats.prevTotal)} ดาว</p>
-        </div>
-        <span className={`fq-growth ${up ? "up" : "down"}`}>
-          {up ? <TrendingUp size={18} strokeWidth={2.6} /> : <TrendingDown size={18} strokeWidth={2.6} />}
-          {up ? "+" : ""}{stats.growth}%
-        </span>
-      </div>
-
-      <h3 className="fq-h3"><BarChart3 size={17} strokeWidth={2.5} /> เปรียบเทียบรายคน</h3>
-      <ul className="fq-bars">
-        {stats.rows.map((r) => {
-          const d = r.cur - r.pre;
-          return (
-            <li key={r.id} className="fq-barrow">
-              <div className="fq-barhead">
-                <span className="fq-barname">{r.name}</span>
-                <span className={`fq-bardelta ${d >= 0 ? "up" : "down"}`}>{d >= 0 ? "+" : ""}{fmt(d)} ดาว</span>
-              </div>
-              <div className="fq-bar"><span style={{ width: `${(r.cur / stats.max) * 100}%` }} /><b>{fmt(r.cur)}</b></div>
-              <div className="fq-bar pre"><span style={{ width: `${(r.pre / stats.max) * 100}%` }} /><b>{fmt(r.pre)}</b></div>
-            </li>
-          );
-        })}
-      </ul>
-      <p className="fq-legend"><i className="cur" /> ช่วงปัจจุบัน <i className="pre" /> ช่วงก่อนหน้า</p>
-    </div>
-  );
+    const up = stats.growth >= 0;
+    return (React.createElement("div", { className: "fq-review" },
+        React.createElement("div", { className: "fq-segment" },
+            React.createElement("button", { className: `fq-seg ${span === "week" ? "on" : ""}`, onClick: () => setSpan("week") }, "\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49 vs \u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E17\u0E35\u0E48\u0E41\u0E25\u0E49\u0E27"),
+            React.createElement("button", { className: `fq-seg ${span === "month" ? "on" : ""}`, onClick: () => setSpan("month") }, "\u0E40\u0E14\u0E37\u0E2D\u0E19\u0E19\u0E35\u0E49 vs \u0E40\u0E14\u0E37\u0E2D\u0E19\u0E17\u0E35\u0E48\u0E41\u0E25\u0E49\u0E27")),
+        React.createElement("div", { className: "fq-statcard" },
+            React.createElement("div", null,
+                React.createElement("p", { className: "fq-stat-label" },
+                    "\u0E14\u0E32\u0E27\u0E23\u0E27\u0E21\u0E17\u0E31\u0E49\u0E07\u0E1A\u0E49\u0E32\u0E19",
+                    span === "week" ? "สัปดาห์นี้" : "เดือนนี้"),
+                React.createElement("p", { className: "fq-stat-num" },
+                    fmt(stats.total),
+                    " ",
+                    React.createElement("span", null, "\u0E14\u0E32\u0E27")),
+                React.createElement("p", { className: "fq-stat-prev" },
+                    "\u0E0A\u0E48\u0E27\u0E07\u0E01\u0E48\u0E2D\u0E19\u0E2B\u0E19\u0E49\u0E32 ",
+                    fmt(stats.prevTotal),
+                    " \u0E14\u0E32\u0E27")),
+            React.createElement("span", { className: `fq-growth ${up ? "up" : "down"}` },
+                up ? React.createElement(TrendingUp, { size: 18, strokeWidth: 2.6 }) : React.createElement(TrendingDown, { size: 18, strokeWidth: 2.6 }),
+                up ? "+" : "",
+                stats.growth,
+                "%")),
+        React.createElement("h3", { className: "fq-h3" },
+            React.createElement(BarChart3, { size: 17, strokeWidth: 2.5 }),
+            " \u0E40\u0E1B\u0E23\u0E35\u0E22\u0E1A\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E23\u0E32\u0E22\u0E04\u0E19"),
+        React.createElement("ul", { className: "fq-bars" }, stats.rows.map((r) => {
+            const d = r.cur - r.pre;
+            return (React.createElement("li", { key: r.id, className: "fq-barrow" },
+                React.createElement("div", { className: "fq-barhead" },
+                    React.createElement("span", { className: "fq-barname" }, r.name),
+                    React.createElement("span", { className: `fq-bardelta ${d >= 0 ? "up" : "down"}` },
+                        d >= 0 ? "+" : "",
+                        fmt(d),
+                        " \u0E14\u0E32\u0E27")),
+                React.createElement("div", { className: "fq-bar" },
+                    React.createElement("span", { style: { width: `${(r.cur / stats.max) * 100}%` } }),
+                    React.createElement("b", null, fmt(r.cur))),
+                React.createElement("div", { className: "fq-bar pre" },
+                    React.createElement("span", { style: { width: `${(r.pre / stats.max) * 100}%` } }),
+                    React.createElement("b", null, fmt(r.pre)))));
+        })),
+        React.createElement("p", { className: "fq-legend" },
+            React.createElement("i", { className: "cur" }),
+            " \u0E0A\u0E48\u0E27\u0E07\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19 ",
+            React.createElement("i", { className: "pre" }),
+            " \u0E0A\u0E48\u0E27\u0E07\u0E01\u0E48\u0E2D\u0E19\u0E2B\u0E19\u0E49\u0E32")));
 }
-
-function ManageTab({
-  users, tasks, settings, meId,
-  onAddTask, onRemoveTask, onAddUser, onSaveUser, onRemoveUser, onSavePin,
-}) {
-  const [nt, setNt] = useState({ title: "", place: "", base: 1, owner: users[0] ? users[0].id : "" });
-  const [nu, setNu] = useState({ name: "", role: "standard", goal: 10, mult: 1 });
-  const [edit, setEdit] = useState(null);
-  const [del, setDel] = useState(null);
-  const [pin, setPin] = useState(settings.pin || "");
-
-  const submitTask = () => {
-    if (!nt.title.trim() || !nt.owner) return;
-    onAddTask({
-      owner: nt.owner, title: nt.title.trim(), place: nt.place.trim() || "ทั่วบ้าน",
-      base: Number(nt.base) || 1, icon: "list", high: false, status: "todo",
-    });
-    setNt({ ...nt, title: "", place: "" });
-  };
-
-  const submitUser = () => {
-    if (!nu.name.trim()) return;
-    onAddUser({
-      name: nu.name.trim(), role: nu.role, goal: Number(nu.goal) || 0,
-      mult: Number(nu.mult) || 1, note: ROLES[nu.role].short, sort: 100,
-    });
-    setNu({ name: "", role: "standard", goal: 10, mult: 1 });
-  };
-
-  return (
-    <div className="fq-review">
-      <h3 className="fq-h3" style={{ marginTop: 0 }}><Plus size={17} strokeWidth={2.6} /> เพิ่มภารกิจใหม่</h3>
-      <div className="fq-form">
-        <label className="fq-field"><span>ชื่องาน</span>
-          <input className="fq-input" value={nt.title} placeholder="เช่น ล้างตู้เย็น"
-            onChange={(e) => setNt({ ...nt, title: e.target.value })} /></label>
-        <label className="fq-field"><span>สถานที่</span>
-          <input className="fq-input" value={nt.place} placeholder="เช่น ห้องครัว"
-            onChange={(e) => setNt({ ...nt, place: e.target.value })} /></label>
-        <div className="fq-field-row">
-          <label className="fq-field"><span>ดาวพื้นฐาน</span>
-            <input className="fq-input" type="number" min="1" max="10" value={nt.base}
-              onChange={(e) => setNt({ ...nt, base: e.target.value })} /></label>
-          <label className="fq-field"><span>มอบหมายให้</span>
-            <select className="fq-input" value={nt.owner} onChange={(e) => setNt({ ...nt, owner: e.target.value })}>
-              {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-            </select></label>
-        </div>
-        <button className="fq-primary" onClick={submitTask}><Plus size={18} strokeWidth={2.8} /> เพิ่มภารกิจ</button>
-      </div>
-
-      <h3 className="fq-h3"><ListChecks size={17} strokeWidth={2.5} /> ภารกิจทั้งหมด ({tasks.length})</h3>
-      <ul className="fq-manage">
-        {users.map((u) => {
-          const own = tasks.filter((t) => t.owner === u.id);
-          if (!own.length) return null;
-          return (
-            <li key={u.id} className="fq-mgroup">
-              <p className="fq-mgroup-head">{u.name} · ตัวคูณ {fmt(u.mult)}x</p>
-              {own.map((t) => (
-                <div key={t.id} className="fq-mrow">
-                  <span className="fq-mrow-title">{t.title}</span>
-                  <span className="fq-mrow-sub">{t.place} · {t.base} × {fmt(u.mult)} = {fmt(netStars(t.base, u.mult))} ดาว</span>
-                  <button className="fq-icon-btn danger" onClick={() => onRemoveTask(t)} aria-label="ลบภารกิจ">
-                    <Trash size={16} strokeWidth={2.4} />
-                  </button>
-                </div>
-              ))}
-            </li>
-          );
-        })}
-      </ul>
-
-      <h3 className="fq-h3"><Users size={17} strokeWidth={2.5} /> สมาชิกและสิทธิ์การใช้งาน</h3>
-      <ul className="fq-manage">
-        {users.map((u) => (
-          <li key={u.id} className="fq-user">
-            {edit && edit.id === u.id ? (
-              <div className="fq-form inner">
-                <label className="fq-field"><span>ชื่อ</span>
-                  <input className="fq-input" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></label>
-                <label className="fq-field"><span>บทบาท</span>
-                  <select className="fq-input" value={edit.role} onChange={(e) => setEdit({ ...edit, role: e.target.value })}>
-                    {Object.keys(ROLES).map((k) => <option key={k} value={k}>{ROLES[k].label} — {ROLES[k].short}</option>)}
-                  </select></label>
-                <div className="fq-field-row">
-                  <label className="fq-field"><span>เป้าดาว</span>
-                    <input className="fq-input" type="number" min="0" value={edit.goal}
-                      onChange={(e) => setEdit({ ...edit, goal: e.target.value })} /></label>
-                  <label className="fq-field"><span>ตัวคูณ</span>
-                    <input className="fq-input" type="number" step="0.5" min="0.5" max="5" value={edit.mult}
-                      onChange={(e) => setEdit({ ...edit, mult: e.target.value })} /></label>
-                </div>
-                <label className="fq-field"><span>รางวัลประจำรอบ</span>
-                  <input className="fq-input" value={edit.reward || ""} onChange={(e) => setEdit({ ...edit, reward: e.target.value })} /></label>
-                <div className="fq-field-row">
-                  <button className="fq-primary" onClick={() => {
-                    onSaveUser(u, {
-                      name: edit.name, role: edit.role, goal: Number(edit.goal) || 0,
-                      mult: Number(edit.mult) || 1, reward: edit.reward || "",
-                    });
-                    setEdit(null);
-                  }}><Save size={17} strokeWidth={2.6} /> บันทึก</button>
-                  <button className="fq-ghost" onClick={() => setEdit(null)}>ยกเลิก</button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="fq-user-main">
-                  <span className="fq-user-name">{u.name}</span>
-                  <span className={`fq-roletag ${u.role}`}>{ROLES[u.role].label}</span>
-                  <span className="fq-user-sub">เป้า {u.goal} ดาว · ตัวคูณ {fmt(u.mult)}x · {ROLES[u.role].short}</span>
-                </div>
-                <div className="fq-user-acts">
-                  <button className="fq-icon-btn" onClick={() => setEdit({ ...u })} aria-label="แก้ไข">
-                    <Pencil size={16} strokeWidth={2.4} />
-                  </button>
-                  {u.id !== meId && (del === u.id ? (
-                    <button className="fq-icon-btn danger wide" onClick={() => { onRemoveUser(u); setDel(null); }}>ยืนยันลบ</button>
-                  ) : (
-                    <button className="fq-icon-btn danger" onClick={() => setDel(u.id)} aria-label="ลบสมาชิก">
-                      <Trash size={16} strokeWidth={2.4} />
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <h3 className="fq-h3"><UserPlus size={17} strokeWidth={2.5} /> เพิ่มสมาชิกใหม่</h3>
-      <div className="fq-form">
-        <label className="fq-field"><span>ชื่อ</span>
-          <input className="fq-input" value={nu.name} placeholder="เช่น คุณย่า"
-            onChange={(e) => setNu({ ...nu, name: e.target.value })} /></label>
-        <label className="fq-field"><span>บทบาท</span>
-          <select className="fq-input" value={nu.role} onChange={(e) => setNu({ ...nu, role: e.target.value })}>
-            {Object.keys(ROLES).map((k) => <option key={k} value={k}>{ROLES[k].label} — {ROLES[k].short}</option>)}
-          </select></label>
-        <div className="fq-field-row">
-          <label className="fq-field"><span>เป้าดาว</span>
-            <input className="fq-input" type="number" min="0" value={nu.goal}
-              onChange={(e) => setNu({ ...nu, goal: e.target.value })} /></label>
-          <label className="fq-field"><span>ตัวคูณ</span>
-            <input className="fq-input" type="number" step="0.5" min="0.5" max="5" value={nu.mult}
-              onChange={(e) => setNu({ ...nu, mult: e.target.value })} /></label>
-        </div>
-        <button className="fq-primary" onClick={submitUser}><UserPlus size={18} strokeWidth={2.6} /> เพิ่มสมาชิก</button>
-      </div>
-
-      <h3 className="fq-h3"><KeyRound size={17} strokeWidth={2.5} /> รหัส PIN ของผู้ดูแล</h3>
-      <div className="fq-form">
-        <div className="fq-field-row">
-          <label className="fq-field"><span>รหัส 4 หลัก</span>
-            <input className="fq-input" inputMode="numeric" maxLength={4} value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} /></label>
-          <button className="fq-primary" onClick={() => pin.length === 4 && onSavePin(pin)}>
-            <Save size={17} strokeWidth={2.6} /> บันทึก PIN
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+function ManageTab({ users, tasks, settings, meId, onAddTask, onRemoveTask, onAddUser, onSaveUser, onRemoveUser, onSavePin, }) {
+    const [nt, setNt] = useState({ title: "", place: "", base: 1, owner: users[0] ? users[0].id : "" });
+    const [nu, setNu] = useState({ name: "", role: "standard", goal: 10, mult: 1 });
+    const [edit, setEdit] = useState(null);
+    const [del, setDel] = useState(null);
+    const [pin, setPin] = useState(settings.pin || "");
+    const submitTask = () => {
+        if (!nt.title.trim() || !nt.owner)
+            return;
+        onAddTask({
+            owner: nt.owner, title: nt.title.trim(), place: nt.place.trim() || "ทั่วบ้าน",
+            base: Number(nt.base) || 1, icon: "list", high: false, status: "todo",
+        });
+        setNt({ ...nt, title: "", place: "" });
+    };
+    const submitUser = () => {
+        if (!nu.name.trim())
+            return;
+        onAddUser({
+            name: nu.name.trim(), role: nu.role, goal: Number(nu.goal) || 0,
+            mult: Number(nu.mult) || 1, note: ROLES[nu.role].short, sort: 100,
+        });
+        setNu({ name: "", role: "standard", goal: 10, mult: 1 });
+    };
+    return (React.createElement("div", { className: "fq-review" },
+        React.createElement("h3", { className: "fq-h3", style: { marginTop: 0 } },
+            React.createElement(Plus, { size: 17, strokeWidth: 2.6 }),
+            " \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E43\u0E2B\u0E21\u0E48"),
+        React.createElement("div", { className: "fq-form" },
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E0A\u0E37\u0E48\u0E2D\u0E07\u0E32\u0E19"),
+                React.createElement("input", { className: "fq-input", value: nt.title, placeholder: "\u0E40\u0E0A\u0E48\u0E19 \u0E25\u0E49\u0E32\u0E07\u0E15\u0E39\u0E49\u0E40\u0E22\u0E47\u0E19", onChange: (e) => setNt({ ...nt, title: e.target.value }) })),
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E2A\u0E16\u0E32\u0E19\u0E17\u0E35\u0E48"),
+                React.createElement("input", { className: "fq-input", value: nt.place, placeholder: "\u0E40\u0E0A\u0E48\u0E19 \u0E2B\u0E49\u0E2D\u0E07\u0E04\u0E23\u0E31\u0E27", onChange: (e) => setNt({ ...nt, place: e.target.value }) })),
+            React.createElement("div", { className: "fq-field-row" },
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E14\u0E32\u0E27\u0E1E\u0E37\u0E49\u0E19\u0E10\u0E32\u0E19"),
+                    React.createElement("input", { className: "fq-input", type: "number", min: "1", max: "10", value: nt.base, onChange: (e) => setNt({ ...nt, base: e.target.value }) })),
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E21\u0E2D\u0E1A\u0E2B\u0E21\u0E32\u0E22\u0E43\u0E2B\u0E49"),
+                    React.createElement("select", { className: "fq-input", value: nt.owner, onChange: (e) => setNt({ ...nt, owner: e.target.value }) }, users.map((u) => React.createElement("option", { key: u.id, value: u.id }, u.name))))),
+            React.createElement("button", { className: "fq-primary", onClick: submitTask },
+                React.createElement(Plus, { size: 18, strokeWidth: 2.8 }),
+                " \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08")),
+        React.createElement("h3", { className: "fq-h3" },
+            React.createElement(ListChecks, { size: 17, strokeWidth: 2.5 }),
+            " \u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14 (",
+            tasks.length,
+            ")"),
+        React.createElement("ul", { className: "fq-manage" }, users.map((u) => {
+            const own = tasks.filter((t) => t.owner === u.id);
+            if (!own.length)
+                return null;
+            return (React.createElement("li", { key: u.id, className: "fq-mgroup" },
+                React.createElement("p", { className: "fq-mgroup-head" },
+                    u.name,
+                    " \u00B7 \u0E15\u0E31\u0E27\u0E04\u0E39\u0E13 ",
+                    fmt(u.mult),
+                    "x"),
+                own.map((t) => (React.createElement("div", { key: t.id, className: "fq-mrow" },
+                    React.createElement("span", { className: "fq-mrow-title" }, t.title),
+                    React.createElement("span", { className: "fq-mrow-sub" },
+                        t.place,
+                        " \u00B7 ",
+                        t.base,
+                        " \u00D7 ",
+                        fmt(u.mult),
+                        " = ",
+                        fmt(netStars(t.base, u.mult)),
+                        " \u0E14\u0E32\u0E27"),
+                    React.createElement("button", { className: "fq-icon-btn danger", onClick: () => onRemoveTask(t), "aria-label": "\u0E25\u0E1A\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08" },
+                        React.createElement(Trash, { size: 16, strokeWidth: 2.4 })))))));
+        })),
+        React.createElement("h3", { className: "fq-h3" },
+            React.createElement(Users, { size: 17, strokeWidth: 2.5 }),
+            " \u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01\u0E41\u0E25\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C\u0E01\u0E32\u0E23\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19"),
+        React.createElement("ul", { className: "fq-manage" }, users.map((u) => (React.createElement("li", { key: u.id, className: "fq-user" }, edit && edit.id === u.id ? (React.createElement("div", { className: "fq-form inner" },
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E0A\u0E37\u0E48\u0E2D"),
+                React.createElement("input", { className: "fq-input", value: edit.name, onChange: (e) => setEdit({ ...edit, name: e.target.value }) })),
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E1A\u0E17\u0E1A\u0E32\u0E17"),
+                React.createElement("select", { className: "fq-input", value: edit.role, onChange: (e) => setEdit({ ...edit, role: e.target.value }) }, Object.keys(ROLES).map((k) => React.createElement("option", { key: k, value: k },
+                    ROLES[k].label,
+                    " \u2014 ",
+                    ROLES[k].short)))),
+            React.createElement("div", { className: "fq-field-row" },
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E40\u0E1B\u0E49\u0E32\u0E14\u0E32\u0E27"),
+                    React.createElement("input", { className: "fq-input", type: "number", min: "0", value: edit.goal, onChange: (e) => setEdit({ ...edit, goal: e.target.value }) })),
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E15\u0E31\u0E27\u0E04\u0E39\u0E13"),
+                    React.createElement("input", { className: "fq-input", type: "number", step: "0.5", min: "0.5", max: "5", value: edit.mult, onChange: (e) => setEdit({ ...edit, mult: e.target.value }) }))),
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E23\u0E32\u0E07\u0E27\u0E31\u0E25\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E23\u0E2D\u0E1A"),
+                React.createElement("input", { className: "fq-input", value: edit.reward || "", onChange: (e) => setEdit({ ...edit, reward: e.target.value }) })),
+            React.createElement("div", { className: "fq-field-row" },
+                React.createElement("button", { className: "fq-primary", onClick: () => {
+                        onSaveUser(u, {
+                            name: edit.name, role: edit.role, goal: Number(edit.goal) || 0,
+                            mult: Number(edit.mult) || 1, reward: edit.reward || "",
+                        });
+                        setEdit(null);
+                    } },
+                    React.createElement(Save, { size: 17, strokeWidth: 2.6 }),
+                    " \u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01"),
+                React.createElement("button", { className: "fq-ghost", onClick: () => setEdit(null) }, "\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01")))) : (React.createElement(React.Fragment, null,
+            React.createElement("div", { className: "fq-user-main" },
+                React.createElement("span", { className: "fq-user-name" }, u.name),
+                React.createElement("span", { className: `fq-roletag ${u.role}` }, ROLES[u.role].label),
+                React.createElement("span", { className: "fq-user-sub" },
+                    "\u0E40\u0E1B\u0E49\u0E32 ",
+                    u.goal,
+                    " \u0E14\u0E32\u0E27 \u00B7 \u0E15\u0E31\u0E27\u0E04\u0E39\u0E13 ",
+                    fmt(u.mult),
+                    "x \u00B7 ",
+                    ROLES[u.role].short)),
+            React.createElement("div", { className: "fq-user-acts" },
+                React.createElement("button", { className: "fq-icon-btn", onClick: () => setEdit({ ...u }), "aria-label": "\u0E41\u0E01\u0E49\u0E44\u0E02" },
+                    React.createElement(Pencil, { size: 16, strokeWidth: 2.4 })),
+                u.id !== meId && (del === u.id ? (React.createElement("button", { className: "fq-icon-btn danger wide", onClick: () => { onRemoveUser(u); setDel(null); } }, "\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E25\u0E1A")) : (React.createElement("button", { className: "fq-icon-btn danger", onClick: () => setDel(u.id), "aria-label": "\u0E25\u0E1A\u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01" },
+                    React.createElement(Trash, { size: 16, strokeWidth: 2.4 }))))))))))),
+        React.createElement("h3", { className: "fq-h3" },
+            React.createElement(UserPlus, { size: 17, strokeWidth: 2.5 }),
+            " \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01\u0E43\u0E2B\u0E21\u0E48"),
+        React.createElement("div", { className: "fq-form" },
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E0A\u0E37\u0E48\u0E2D"),
+                React.createElement("input", { className: "fq-input", value: nu.name, placeholder: "\u0E40\u0E0A\u0E48\u0E19 \u0E04\u0E38\u0E13\u0E22\u0E48\u0E32", onChange: (e) => setNu({ ...nu, name: e.target.value }) })),
+            React.createElement("label", { className: "fq-field" },
+                React.createElement("span", null, "\u0E1A\u0E17\u0E1A\u0E32\u0E17"),
+                React.createElement("select", { className: "fq-input", value: nu.role, onChange: (e) => setNu({ ...nu, role: e.target.value }) }, Object.keys(ROLES).map((k) => React.createElement("option", { key: k, value: k },
+                    ROLES[k].label,
+                    " \u2014 ",
+                    ROLES[k].short)))),
+            React.createElement("div", { className: "fq-field-row" },
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E40\u0E1B\u0E49\u0E32\u0E14\u0E32\u0E27"),
+                    React.createElement("input", { className: "fq-input", type: "number", min: "0", value: nu.goal, onChange: (e) => setNu({ ...nu, goal: e.target.value }) })),
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E15\u0E31\u0E27\u0E04\u0E39\u0E13"),
+                    React.createElement("input", { className: "fq-input", type: "number", step: "0.5", min: "0.5", max: "5", value: nu.mult, onChange: (e) => setNu({ ...nu, mult: e.target.value }) }))),
+            React.createElement("button", { className: "fq-primary", onClick: submitUser },
+                React.createElement(UserPlus, { size: 18, strokeWidth: 2.6 }),
+                " \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01")),
+        React.createElement("h3", { className: "fq-h3" },
+            React.createElement(KeyRound, { size: 17, strokeWidth: 2.5 }),
+            " \u0E23\u0E2B\u0E31\u0E2A PIN \u0E02\u0E2D\u0E07\u0E1C\u0E39\u0E49\u0E14\u0E39\u0E41\u0E25"),
+        React.createElement("div", { className: "fq-form" },
+            React.createElement("div", { className: "fq-field-row" },
+                React.createElement("label", { className: "fq-field" },
+                    React.createElement("span", null, "\u0E23\u0E2B\u0E31\u0E2A 4 \u0E2B\u0E25\u0E31\u0E01"),
+                    React.createElement("input", { className: "fq-input", inputMode: "numeric", maxLength: 4, value: pin, onChange: (e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4)) })),
+                React.createElement("button", { className: "fq-primary", onClick: () => pin.length === 4 && onSavePin(pin) },
+                    React.createElement(Save, { size: 17, strokeWidth: 2.6 }),
+                    " \u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01 PIN")))));
 }
-
 /* ---------- app ---------- */
 function App() {
-  const [session, setSession] = useState(undefined);
-  const [db, setDb] = useState(null);
-  const [err, setErr] = useState("");
-  const [who, setWho] = useState(null);
-  const [tab, setTab] = useState("mine");
-  const [span, setSpan] = useState("week");
-
-  const [pin, setPin] = useState("");
-  const [pinFor, setPinFor] = useState(null);
-  const [pinErr, setPinErr] = useState(false);
-  const [unlocked, setUnlocked] = useState(null);
-
-  const [bits, setBits] = useState([]);
-  const [toast, setToast] = useState(null);
-  const [party, setParty] = useState(false);
-  const seq = useRef(0);
-  const partyRef = useRef(false);
-  const timer = useRef(null);
-
-  /* ---------- auth ---------- */
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session || null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
-  }, []);
-
-  /* ---------- data + realtime ---------- */
-  const reload = useCallback(async () => {
-    try {
-      const data = await api.fetchAll();
-      setDb(data);
-      setErr(data.users.length === 0
-        ? "ยังไม่มีข้อมูล หรืออีเมลนี้ไม่อยู่ในรายชื่อของบ้าน (ตาราง allowed_emails)" : "");
-    } catch (e) {
-      setErr(e.message || "โหลดข้อมูลไม่สำเร็จ");
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!session) return;
-    reload();
-    const off = api.subscribeAll(() => {
-      clearTimeout(timer.current);
-      timer.current = setTimeout(reload, 250);
-    });
-    return () => { clearTimeout(timer.current); off(); };
-  }, [session, reload]);
-
-  /* ---------- effects ---------- */
-  const burst = useCallback((el, count = 16) => {
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const made = Array.from({ length: count }, () => {
-      seq.current += 1;
-      const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 150;
-      return {
-        key: seq.current, mode: "pop", x: r.left + r.width / 2, y: r.top + r.height / 2,
-        dx: Math.cos(a) * d, dy: Math.sin(a) * d - 60, rot: Math.round(Math.random() * 540 - 270),
-        size: 12 + Math.round(Math.random() * 14), life: 900 + Math.round(Math.random() * 500),
-        kind: pickKind(), tone: TONES[Math.floor(Math.random() * TONES.length)],
-      };
-    });
-    setBits((b) => [...b, ...made]);
-    const ids = new Set(made.map((m) => m.key));
-    setTimeout(() => setBits((b) => b.filter((p) => !ids.has(p.key))), 1600);
-  }, []);
-
-  const rain = useCallback((count = 100) => {
-    const made = Array.from({ length: count }, () => {
-      seq.current += 1;
-      return {
-        key: seq.current, mode: "fall", x: Math.random() * window.innerWidth,
-        y: -40 - Math.random() * 260, drift: Math.random() * 160 - 80,
-        rot: Math.round(Math.random() * 1080 - 540), size: 14 + Math.round(Math.random() * 18),
-        life: 2600 + Math.round(Math.random() * 2200), delay: Math.round(Math.random() * 900),
-        kind: pickKind(), tone: TONES[Math.floor(Math.random() * TONES.length)],
-      };
-    });
-    setBits((b) => [...b, ...made]);
-    const ids = new Set(made.map((m) => m.key));
-    setTimeout(() => setBits((b) => b.filter((p) => !ids.has(p.key))), 6000);
-  }, []);
-
-  const say = (t) => { setToast(t); setTimeout(() => setToast((x) => (x === t ? null : x)), 2400); };
-
-  /* ---------- guards ---------- */
-  if (session === undefined) return <Splash text="กำลังตรวจสอบการเข้าใช้งาน..." />;
-  if (!session) return <SignIn />;
-  if (!db) return <Splash text="กำลังโหลดข้อมูลของบ้าน..." />;
-
-  const { users, tasks, entries, maidLog, audit, settings } = db;
-  const me = users.find((u) => u.id === who) || users[0];
-  if (!me) {
-    return (
-      <div className="fq-root">
-        <div className="fq-signin">
-          <h1 className="fq-title">ภารกิจดาวของบ้านเรา</h1>
-          <p className="fq-signin-sub">{err || "ยังไม่มีสมาชิกในระบบ"}</p>
-          <p className="fq-signin-hint">เข้าใช้ด้วยอีเมล {session.user.email}</p>
-          <button className="fq-ghost" onClick={() => supabase.auth.signOut()}>ออกจากระบบ</button>
-        </div>
-      </div>
-    );
-  }
-
-  /* ---------- derived ---------- */
-  const now = Date.now();
-  const w0 = startOfWeek(now), w1 = w0 - 7 * DAY, m0 = startOfMonth(now), m1 = prevMonthStart(now);
-  const sumIn = (id, from, to) =>
-    entries.filter((e) => e.user_id === id && ms(e.ts) >= from && ms(e.ts) < to)
-      .reduce((s, e) => s + num(e.stars), 0);
-  const weekStars = (id) => sumIn(id, w0, now + DAY);
-
-  const houseGoal = users.filter((u) => u.role !== "staff").reduce((s, u) => s + num(u.goal), 0);
-  const houseStars = users.filter((u) => u.role !== "staff").reduce((s, u) => s + weekStars(u.id), 0);
-
-  const kid = users.find((u) => u.role === "supervised");
-  const staff = users.find((u) => u.role === "staff");
-  const myTasks = tasks.filter((t) => t.owner === me.id);
-  const kidQueue = kid ? tasks.filter((t) => t.owner === kid.id && t.status === "pending") : [];
-  const maidTasks = staff ? tasks.filter((t) => t.owner === staff.id) : [];
-  const maidQueue = maidTasks.filter((t) => t.status === "pending");
-
-  const weekMaid = maidLog.filter((e) => ms(e.ts) >= w0);
-  const passedMaid = weekMaid.filter((e) => e.rating >= 3);
-  const assigned = Math.max(1, maidTasks.length * num(settings.maid_days || 3));
-  const rate = Math.round((passedMaid.length / assigned) * 100);
-  const maidStars = passedMaid.reduce((s, e) => s + num(e.base) * num(staff ? staff.mult : 1), 0);
-  const wageBase = maidStars * num(settings.wage_per_star || 80);
-  const wageBonus = passedMaid.filter((e) => e.rating === 5).length * num(settings.bonus_per_five || 50);
-  const target = num(settings.maid_target || 85);
-
-  const stats = (() => {
-    const cur = span === "week" ? [w0, now + DAY] : [m0, now + DAY];
-    const pre = span === "week" ? [w1, w0] : [m1, m0];
-    const rows = users.filter((u) => u.role !== "staff").map((u) => ({
-      id: u.id, name: u.name, cur: sumIn(u.id, cur[0], cur[1]), pre: sumIn(u.id, pre[0], pre[1]),
-    }));
-    const c = rows.reduce((s, r) => s + r.cur, 0);
-    const p = rows.reduce((s, r) => s + r.pre, 0);
-    return {
-      rows, total: c, prevTotal: p,
-      growth: p === 0 ? (c > 0 ? 100 : 0) : Math.round(((c - p) / p) * 100),
-      max: Math.max(1, ...rows.map((r) => Math.max(r.cur, r.pre))),
-    };
-  })();
-
-  if (houseGoal > 0 && houseStars >= houseGoal && !partyRef.current) {
-    partyRef.current = true;
-    setTimeout(() => { setParty(true); rain(120); }, 100);
-  }
-  if (houseStars < houseGoal) partyRef.current = false;
-
-  /* ---------- actions ---------- */
-  const guard = (fn) => async (...args) => {
-    try { await fn(...args); await reload(); }
-    catch (e) { setErr(e.message || "บันทึกไม่สำเร็จ"); }
-  };
-
-  const submitTask = guard(async (task, el) => {
-    await api.setStatus(task.id, "pending");
-    await api.logAudit(me.name, `ส่งงาน "${task.title}" รอการอนุมัติ`);
-    burst(el); say("ส่งให้ผู้ดูแลตรวจแล้ว");
-  });
-
-  const cancelTask = guard(async (task) => {
-    await api.setStatus(task.id, "todo");
-    await api.logAudit(me.name, `ยกเลิกการส่งงาน "${task.title}"`);
-  });
-
-  const finishTask = guard(async (task, el) => {
-    const owner = users.find((u) => u.id === task.owner);
-    await api.setStatus(task.id, "done");
-    await api.addEntry(owner, task);
-    await api.logAudit(owner.name, `ทำงาน "${task.title}" เสร็จและรับดาวทันที (+${fmt(netStars(task.base, owner.mult))} ดาว)`);
-    burst(el); say(`ได้ ${fmt(netStars(task.base, owner.mult))} ดาว`);
-  });
-
-  const approveTask = guard(async (task, el) => {
-    const owner = users.find((u) => u.id === task.owner);
-    const net = netStars(task.base, owner.mult);
-    await api.setStatus(task.id, "done");
-    await api.addEntry(owner, task);
-    await api.logAudit(me.name, `${me.name}อนุมัติงาน "${task.title}" ให้${owner.name} (+${fmt(net)} ดาว = ${task.base} × ${fmt(owner.mult)})`);
-    burst(el); say(`อนุมัติ +${fmt(net)} ดาวให้${owner.name}`);
-  });
-
-  const rejectTask = guard(async (task) => {
-    await api.setStatus(task.id, "todo");
-    await api.logAudit(me.name, `ส่งงาน "${task.title}" กลับไปให้ทำใหม่`);
-  });
-
-  const maidSubmit = guard(async (task) => {
-    await api.setStatus(task.id, "pending");
-    await api.logAudit(me.name, `บันทึกงาน "${task.title}" รอตรวจประเมิน`);
-    say("บันทึกงานแล้ว รอตรวจประเมิน");
-  });
-
-  const maidUndo = guard(async (task) => {
-    await api.setStatus(task.id, "todo");
-    await api.logAudit(me.name, `ยกเลิกการบันทึกงาน "${task.title}"`);
-  });
-
-  const rateMaid = guard(async (task, score) => {
-    await api.setStatus(task.id, "rated");
-    await api.addMaidRating(task, score);
-    await api.updateSettings({ paid: false });
-    await api.logAudit(me.name, `${me.name}ประเมินงาน "${task.title}" ของพี่แม่บ้าน ${score} ดาว (${score >= 3 ? "ผ่าน" : "ไม่ผ่าน"})`);
-    say(score >= 3 ? `ให้ ${score} ดาว ผ่านเกณฑ์` : `ให้ ${score} ดาว ยังไม่ผ่านเกณฑ์`);
-  });
-
-  const togglePaid = guard(async (el) => {
-    const next = !settings.paid;
-    await api.updateSettings({ paid: next });
-    await api.logAudit(me.name, next
-      ? `บันทึกการจ่ายค่าตอบแทนแม่บ้าน ${baht(wageBase + wageBonus)} บาท`
-      : "ย้อนสถานะค่าตอบแทนเป็นรอจ่าย");
-    if (next) burst(el, 12);
-  });
-
-  const addTask = guard(async (t) => {
-    await api.addTask(t);
-    const owner = users.find((u) => u.id === t.owner);
-    await api.logAudit(me.name, `เพิ่มภารกิจใหม่: "${t.title}" (${t.base} ดาวพื้นฐาน) ให้${owner ? owner.name : ""}`);
-    say("เพิ่มภารกิจใหม่แล้ว");
-  });
-
-  const removeTask = guard(async (t) => {
-    await api.deleteTask(t.id);
-    await api.logAudit(me.name, `ลบภารกิจ "${t.title}"`);
-  });
-
-  const addUser = guard(async (u) => {
-    await api.addUser(u);
-    await api.logAudit(me.name, `เพิ่มสมาชิกใหม่: ${u.name} (${ROLES[u.role].label}, เป้า ${u.goal} ดาว, ตัวคูณ ${u.mult}x)`);
-    say("เพิ่มสมาชิกแล้ว");
-  });
-
-  const saveUser = guard(async (u, patch) => {
-    await api.updateUser(u.id, patch);
-    await api.logAudit(me.name, `แก้ไขโปรไฟล์ ${patch.name}: บทบาท ${ROLES[patch.role].label}, เป้า ${patch.goal} ดาว, ตัวคูณ ${patch.mult}x${num(u.mult) !== num(patch.mult) ? ` (เดิม ${fmt(u.mult)}x)` : ""}`);
-    say("บันทึกโปรไฟล์แล้ว");
-  });
-
-  const removeUser = guard(async (u) => {
-    await api.deleteUser(u.id);
-    await api.logAudit(me.name, `ลบสมาชิก ${u.name} และภารกิจทั้งหมดของสมาชิกคนนี้`);
-    if (who === u.id) setWho(null);
-  });
-
-  const savePin = guard(async (code) => {
-    await api.updateSettings({ pin: code });
-    await api.logAudit(me.name, "เปลี่ยนรหัส PIN ของผู้ดูแล");
-    say("บันทึก PIN ใหม่แล้ว");
-  });
-
-  const doReset = guard(async () => {
-    await api.resetWeek();
-    partyRef.current = false;
-    say("เริ่มรอบใหม่แล้ว");
-  });
-
-  /* ---------- profile switch ---------- */
-  const pick = (u) => {
-    setTab("mine");
-    if (ROLES[u.role].pin && unlocked !== u.id) { setPin(""); setPinErr(false); setPinFor(u.id); return; }
-    if (!ROLES[u.role].pin) setUnlocked(null);
-    setWho(u.id);
-  };
-
-  const tapPin = (d) => {
-    setPinErr(false);
-    const next = (pin + d).slice(0, 4);
-    setPin(next);
-    if (next.length === 4) setTimeout(async () => {
-      if (next === (settings.pin || "3103")) {
-        const u = users.find((x) => x.id === pinFor);
-        setUnlocked(pinFor); setWho(pinFor); setPinFor(null); setPin("");
-        await api.logAudit(u ? u.name : "ผู้ดูแล", "ปลดล็อกโหมดผู้ดูแลด้วย PIN");
+    const [session, setSession] = useState(undefined);
+    const [db, setDb] = useState(null);
+    const [err, setErr] = useState("");
+    const [who, setWho] = useState(null);
+    const [tab, setTab] = useState("mine");
+    const [span, setSpan] = useState("week");
+    const [pin, setPin] = useState("");
+    const [pinFor, setPinFor] = useState(null);
+    const [pinErr, setPinErr] = useState(false);
+    const [unlocked, setUnlocked] = useState(null);
+    const [bits, setBits] = useState([]);
+    const [toast, setToast] = useState(null);
+    const [party, setParty] = useState(false);
+    const seq = useRef(0);
+    const partyRef = useRef(false);
+    const timer = useRef(null);
+    /* ---------- auth ---------- */
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => setSession(data.session || null));
+        const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+        return () => sub.subscription.unsubscribe();
+    }, []);
+    /* ---------- data + realtime ---------- */
+    const reload = useCallback(async () => {
+        try {
+            const data = await api.fetchAll();
+            setDb(data);
+            setErr(data.users.length === 0
+                ? "ยังไม่มีข้อมูล หรืออีเมลนี้ไม่อยู่ในรายชื่อของบ้าน (ตาราง allowed_emails)" : "");
+        }
+        catch (e) {
+            setErr(e.message || "โหลดข้อมูลไม่สำเร็จ");
+        }
+    }, []);
+    useEffect(() => {
+        if (!session)
+            return;
         reload();
-      } else { setPinErr(true); setPin(""); }
-    }, 150);
-  };
-
-  const isAdmin = me.role === "admin";
-  const isStaff = me.role === "staff";
-  const mine = weekStars(me.id);
-  const left = Math.max(0, num(me.goal) - mine);
-
-  return (
-    <div className="fq-root">
-      <div className="fq-shell">
-        <header className="fq-top">
-          <div>
-            <h1 className="fq-title">ภารกิจดาวของบ้านเรา</h1>
-            <p className="fq-sub">{thDay(now)} · เข้าใช้เป็น {session.user.email}</p>
-          </div>
-          <div className="fq-top-acts">
-            <Users size={20} strokeWidth={2.4} className="fq-top-ic" />
-            <button className="fq-signout" onClick={() => supabase.auth.signOut()} aria-label="ออกจากระบบ">
-              <LogOut size={17} strokeWidth={2.4} />
-            </button>
-          </div>
-        </header>
-
-        {err && <p className="fq-warn">{err}</p>}
-
-        <section className="fq-pool">
-          <div className="fq-pool-head">
-            <div className="fq-count">
-              <Star size={32} strokeWidth={0} fill="#FFD028" className="fq-count-star" />
-              <span className="fq-count-num">{fmt(houseStars)}</span>
-              <span className="fq-count-goal">/ {houseGoal}</span>
-            </div>
-            <p className="fq-pool-msg">
-              {houseStars >= houseGoal ? "ครบแล้ว จัดหมูกระทะ!" : `ทั้งบ้านขาดอีก ${fmt(houseGoal - houseStars)} ดาว`}
-            </p>
-          </div>
-          <div className="fq-track" role="progressbar" aria-valuenow={houseStars} aria-valuemin={0} aria-valuemax={houseGoal}>
-            <div className="fq-fill" style={{ width: `${Math.min(100, (houseStars / Math.max(1, houseGoal)) * 100)}%` }} />
-          </div>
-          <div className="fq-reward"><Gift size={18} strokeWidth={2.4} /><span>ครบ {houseGoal} ดาวเมื่อไหร่ {settings.family_reward}</span></div>
-          <p className="fq-poolnote">เป้าหมายรวมคิดจากเป้าของสมาชิกในบ้าน ไม่รวมงานของพี่แม่บ้าน</p>
-        </section>
-
-        <div className="fq-people" role="tablist">
-          {users.map((u) => {
-            const Ic = u.role === "staff" ? Sparkles : u.role === "admin" ? (u.hue === "grape" ? Heart : ShieldCheck)
-              : u.role === "standard" ? Armchair : Smile;
-            const locked = ROLES[u.role].pin && unlocked !== u.id;
-            return (
-              <button key={u.id} role="tab" aria-selected={who === u.id}
-                className={`fq-person hue-${u.hue} ${me.id === u.id ? "on" : ""} ${u.role === "staff" ? "staff" : ""}`}
-                onClick={() => pick(u)}>
-                <span className="fq-person-ic"><Ic size={20} strokeWidth={2.5} /></span>
-                <span className="fq-person-name">{u.name}</span>
-                <span className="fq-person-stars">
-                  {u.role === "staff" ? `ผลงาน ${rate}%` : `${fmt(weekStars(u.id))}/${u.goal} ดาว`}
-                  {num(u.mult) !== 1 && u.role !== "staff" ? ` · ${fmt(u.mult)}x` : ""}
-                </span>
-                {locked && <Lock size={13} strokeWidth={2.8} className="fq-person-lock" />}
-                {ROLES[u.role].pin && (kidQueue.length + maidQueue.length) > 0 &&
-                  <span className="fq-badge">{kidQueue.length + maidQueue.length}</span>}
-              </button>
-            );
-          })}
-        </div>
-
-        {isStaff ? (
-          <section className="fq-staff">
-            <div className="fq-staff-head">
-              <div>
-                <h2 className="fq-staff-name">{me.name}</h2>
-                <p className="fq-staff-note">{me.note} · บทบาท {ROLES[me.role].label}</p>
-              </div>
-              <span className="fq-staff-chip">คะแนนแยกจากกองรวมของบ้าน</span>
-            </div>
-
-            <div className="fq-gauge-row">
-              <Gauge value={rate} target={target} />
-              <div className="fq-gauge-info">
-                <p className="fq-gauge-label">อัตราความสำเร็จประจำสัปดาห์</p>
-                <p className="fq-gauge-detail">ผ่านเกณฑ์ {passedMaid.length} จาก {assigned} งานที่มอบหมาย</p>
-                <p className={`fq-gauge-status ${rate >= target ? "ok" : "low"}`}>
-                  {rate >= target
-                    ? <><BadgeCheck size={16} strokeWidth={2.6} /> ถึงเป้าหมายขั้นต่ำ {target}%</>
-                    : <><AlertTriangle size={16} strokeWidth={2.6} /> ต่ำกว่าเป้า {target}% อีก {Math.max(0, Math.ceil((target / 100) * assigned) - passedMaid.length)} งาน</>}
-                </p>
-              </div>
-            </div>
-
-            <h3 className="fq-staff-h3">เช็กลิสต์งานวันนี้</h3>
-            <ul className="fq-check">
-              {maidTasks.map((t) => {
-                const Ic = iconOf(t.icon);
-                return (
-                  <li key={t.id} className={`fq-check-item ${t.status}`}>
-                    <button className="fq-check-btn" disabled={t.status !== "todo"}
-                      onClick={() => maidSubmit(t)} aria-label={`บันทึกงาน ${t.title}`}>
-                      {t.status === "todo" ? <Square size={30} strokeWidth={2.2} /> : <SquareCheck size={30} strokeWidth={2.2} />}
-                    </button>
-                    <div className="fq-check-body">
-                      <div className="fq-check-line">
-                        <Ic size={16} strokeWidth={2.4} className="fq-check-ic" />
-                        <span className="fq-check-title">{t.title}</span>
-                        {t.high && <span className="fq-flag">สำคัญสูง</span>}
-                      </div>
-                      <p className="fq-check-where">{t.place} · {t.base} ดาวงาน</p>
-                      {t.status === "pending" && (
-                        <div className="fq-check-state"><Clock size={15} strokeWidth={2.6} /> รอตรวจประเมิน
-                          <button className="fq-check-undo" onClick={() => maidUndo(t)}>
-                            <Undo2 size={14} strokeWidth={2.6} /> ยกเลิก
-                          </button>
-                        </div>)}
-                      {t.status === "rated" && <div className="fq-check-state done"><CheckCheck size={15} strokeWidth={2.6} /> ตรวจประเมินแล้ว</div>}
-                    </div>
-                  </li>);
-              })}
-            </ul>
-
-            <div className="fq-wage plain">
-              <div className="fq-wage-line"><span>ดาวงานที่ผ่านเกณฑ์</span><span>{fmt(maidStars)} ดาว</span></div>
-              <div className="fq-wage-line"><span>ค่าตอบแทนสะสม</span><span>{baht(wageBase + wageBonus)} บาท</span></div>
-              <div className="fq-wage-line"><span>สถานะการจ่าย</span>
-                <span className={settings.paid ? "paid" : "pending"}>{settings.paid ? "จ่ายแล้ว" : "รอจ่าย"}</span></div>
-            </div>
-          </section>
-        ) : (
-          <section className={`fq-panel hue-${me.hue} ${me.role === "standard" ? "big" : ""}`}>
-            <div className="fq-panel-head">
-              <div>
-                <h2 className="fq-panel-name">{me.name}</h2>
-                <p className="fq-panel-note">{me.note} · {ROLES[me.role].label} · ตัวคูณ {fmt(me.mult)}x</p>
-              </div>
-              <div className="fq-panel-score">
-                <span className="fq-panel-num">{fmt(mine)}</span><span className="fq-panel-den">/{me.goal}</span>
-              </div>
-            </div>
-            <div className="fq-mini-track">
-              <div className="fq-mini-fill" style={{ width: `${Math.min(100, (mine / Math.max(1, num(me.goal))) * 100)}%` }} />
-            </div>
-            <p className="fq-panel-left">
-              {left === 0 ? `ครบเป้าแล้ว: ${me.reward || "รับรางวัลได้"}` : `ขาดอีก ${fmt(left)} ดาว จะได้ ${me.reward || "รางวัลประจำรอบ"}`}
-            </p>
-
-            {isAdmin && (
-              <div className="fq-tabs" role="tablist">
-                {[["mine", "งานของฉัน"],
-                  ["review", `ตรวจงาน${kid ? kid.name : "เด็ก"}${kidQueue.length ? ` (${kidQueue.length})` : ""}`],
-                  ["maid", `ตรวจงานแม่บ้าน${maidQueue.length ? ` (${maidQueue.length})` : ""}`],
-                  ["stats", "แดชบอร์ดสถิติ"], ["manage", "จัดการสมาชิก"], ["audit", "ประวัติย้อนกลับ"]
-                ].map(([k, label]) => (
-                  <button key={k} role="tab" aria-selected={tab === k}
-                    className={`fq-tab ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{label}</button>
-                ))}
-              </div>
-            )}
-
-            {(!isAdmin || tab === "mine") && (
-              <div className="fq-tasks">
-                {myTasks.length === 0 && <p className="fq-empty">ยังไม่มีภารกิจ ให้ผู้ดูแลเพิ่มให้ในแท็บจัดการสมาชิก</p>}
-                {myTasks.map((t) => (
-                  <TaskCard key={t.id} task={t} user={me}
-                    onSubmit={submitTask} onCancel={cancelTask} onFinish={finishTask} />
-                ))}
-              </div>
-            )}
-
-            {isAdmin && tab === "review" && (
-              <div className="fq-review">
-                {kidQueue.length === 0 ? <p className="fq-empty">ยังไม่มีงานรอตรวจ</p> : (
-                  <ul className="fq-queue">
-                    {kidQueue.map((t) => {
-                      const Ic = iconOf(t.icon);
-                      const owner = users.find((u) => u.id === t.owner);
-                      return (
-                        <li key={t.id} className="fq-row">
-                          <span className="fq-row-ic"><Ic size={22} strokeWidth={2.4} /></span>
-                          <span className="fq-row-text">
-                            <span className="fq-row-title">{t.title}</span>
-                            <span className="fq-row-sub">{owner.name} · {t.base} × {fmt(owner.mult)}x = {fmt(netStars(t.base, owner.mult))} ดาว</span>
-                          </span>
-                          <span className="fq-row-acts">
-                            <button className="fq-back" onClick={() => rejectTask(t)}>ให้ทำใหม่</button>
-                            <button className="fq-approve" onClick={(e) => approveTask(t, e.currentTarget)}>
-                              <Check size={20} strokeWidth={3} /> อนุมัติ
-                            </button>
-                          </span>
-                        </li>);
-                    })}
-                  </ul>)}
-
-                <h3 className="fq-h3">ดาวล่าสุดของทุกคน</h3>
-                <ul className="fq-history">
-                  {entries.slice(0, 8).map((e) => (
-                    <li key={e.id}>
-                      <span className="fq-hist-ic"><CheckCheck size={15} strokeWidth={2.6} /></span>
-                      <span className="fq-hist-who">{(users.find((u) => u.id === e.user_id) || {}).name || "-"}</span>
-                      <span className="fq-hist-title">{e.title}</span>
-                      <span className="fq-hist-star">+{fmt(e.stars)}<Star size={11} strokeWidth={0} fill="currentColor" /></span>
-                    </li>))}
-                </ul>
-                <button className="fq-reset" onClick={doReset}>
-                  <RotateCcw size={16} strokeWidth={2.6} /> เริ่มรอบใหม่ (ล้างดาวทั้งหมด)
-                </button>
-              </div>
-            )}
-
-            {isAdmin && tab === "maid" && (
-              <div className="fq-review">
-                <div className="fq-ratehead">
-                  <span className="fq-ratehead-num">{rate}%</span>
-                  <span className="fq-ratehead-txt">อัตราความสำเร็จ (เป้า {target}%) · ผ่าน {passedMaid.length}/{assigned} งาน</span>
-                </div>
-                {maidQueue.length === 0 ? <p className="fq-empty">ยังไม่มีงานของพี่แม่บ้านรอประเมิน</p> : (
-                  <ul className="fq-queue">{maidQueue.map((t) => <RateRow key={t.id} task={t} onRate={rateMaid} />)}</ul>)}
-
-                <h3 className="fq-h3">สรุปค่าตอบแทนสัปดาห์นี้</h3>
-                <div className="fq-wage">
-                  <div className="fq-wage-line"><span>งานที่ผ่านเกณฑ์ (3 ดาวขึ้นไป)</span><span>{passedMaid.length} งาน · {fmt(maidStars)} ดาวงาน</span></div>
-                  <div className="fq-wage-line"><span>ค่าตอบแทนงาน ({settings.wage_per_star} บาท/ดาวงาน)</span><span>{baht(wageBase)} บาท</span></div>
-                  <div className="fq-wage-line"><span>โบนัสงานเรียบร้อย (5 ดาว × {settings.bonus_per_five} บาท)</span><span>{baht(wageBonus)} บาท</span></div>
-                  <div className="fq-wage-total"><span>รวมที่ต้องจ่าย</span><span>{baht(wageBase + wageBonus)} บาท</span></div>
-                  <div className="fq-wage-status">
-                    <span className={`fq-pill ${settings.paid ? "paid" : "pending"}`}>
-                      <Wallet size={15} strokeWidth={2.6} /> {settings.paid ? "จ่ายแล้ว (Paid)" : "รอจ่าย (Pending)"}
-                    </span>
-                    <button className={`fq-pay ${settings.paid ? "undo" : ""}`} onClick={(e) => togglePaid(e.currentTarget)}>
-                      {settings.paid ? "ย้อนกลับเป็นรอจ่าย" : "บันทึกว่าจ่ายแล้ว"}
-                    </button>
-                  </div>
-                </div>
-
-                <h3 className="fq-h3">ผลประเมินล่าสุด</h3>
-                <ul className="fq-history">
-                  {maidLog.slice(0, 8).map((e) => (
-                    <li key={e.id}>
-                      <span className={`fq-hist-ic ${e.rating >= 3 ? "" : "bad"}`}>
-                        {e.rating >= 3 ? <CheckCheck size={15} strokeWidth={2.6} /> : <AlertTriangle size={15} strokeWidth={2.6} />}
-                      </span>
-                      <span className="fq-hist-title">{e.title}</span>
-                      <span className="fq-hist-star">{e.rating}<Star size={11} strokeWidth={0} fill="currentColor" /></span>
-                    </li>))}
-                </ul>
-              </div>
-            )}
-
-            {isAdmin && tab === "stats" && <StatsTab span={span} setSpan={setSpan} stats={stats} />}
-
-            {isAdmin && tab === "manage" && (
-              <ManageTab users={users} tasks={tasks} settings={settings} meId={me.id}
-                onAddTask={addTask} onRemoveTask={removeTask} onAddUser={addUser}
-                onSaveUser={saveUser} onRemoveUser={removeUser} onSavePin={savePin} />
-            )}
-
-            {isAdmin && tab === "audit" && (
-              <div className="fq-review">
-                <h3 className="fq-h3" style={{ marginTop: 0 }}>ประวัติการทำงานย้อนกลับ</h3>
-                {audit.length === 0 ? <p className="fq-empty">ยังไม่มีประวัติ</p> : (
-                  <ul className="fq-audit">
-                    {audit.map((a) => (
-                      <li key={a.id}>
-                        <span className="fq-audit-time">{thDate(a.ts)}</span>
-                        <span className="fq-audit-actor">{a.actor}</span>
-                        <span className="fq-audit-text">{a.text}</span>
-                      </li>))}
-                  </ul>)}
-              </div>
-            )}
-          </section>
-        )}
-      </div>
-
-      <Confetti bits={bits} />
-      {toast && <div className="fq-toast" role="status"><Smile size={18} strokeWidth={2.6} />{toast}</div>}
-
-      {pinFor && (
-        <PinPad name={(users.find((u) => u.id === pinFor) || {}).name} pin={pin} error={pinErr}
-          onDigit={tapPin} onBack={() => { setPin((p) => p.slice(0, -1)); setPinErr(false); }}
-          onClose={() => setPinFor(null)} />
-      )}
-
-      {party && (
-        <div className="fq-modal" role="dialog">
-          <div className="fq-party-card">
-            <PartyPopper size={48} strokeWidth={2.2} className="fq-party-ic" />
-            <p className="fq-party-title">ครบ {houseGoal} ดาวทั้งบ้าน!</p>
-            <p className="fq-party-body">ทุกคนช่วยกันจนครบเป้าหมายรวมของรอบนี้ ถึงเวลา{settings.family_reward}</p>
-            <button className="fq-party-btn" onClick={(e) => { setParty(false); burst(e.currentTarget, 26); }}>เย้!</button>
-          </div>
-        </div>)}
-    </div>
-  );
+        const off = api.subscribeAll(() => {
+            clearTimeout(timer.current);
+            timer.current = setTimeout(reload, 250);
+        });
+        return () => { clearTimeout(timer.current); off(); };
+    }, [session, reload]);
+    /* ---------- effects ---------- */
+    const burst = useCallback((el, count = 16) => {
+        if (!el)
+            return;
+        const r = el.getBoundingClientRect();
+        const made = Array.from({ length: count }, () => {
+            seq.current += 1;
+            const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 150;
+            return {
+                key: seq.current, mode: "pop", x: r.left + r.width / 2, y: r.top + r.height / 2,
+                dx: Math.cos(a) * d, dy: Math.sin(a) * d - 60, rot: Math.round(Math.random() * 540 - 270),
+                size: 12 + Math.round(Math.random() * 14), life: 900 + Math.round(Math.random() * 500),
+                kind: pickKind(), tone: TONES[Math.floor(Math.random() * TONES.length)],
+            };
+        });
+        setBits((b) => [...b, ...made]);
+        const ids = new Set(made.map((m) => m.key));
+        setTimeout(() => setBits((b) => b.filter((p) => !ids.has(p.key))), 1600);
+    }, []);
+    const rain = useCallback((count = 100) => {
+        const made = Array.from({ length: count }, () => {
+            seq.current += 1;
+            return {
+                key: seq.current, mode: "fall", x: Math.random() * window.innerWidth,
+                y: -40 - Math.random() * 260, drift: Math.random() * 160 - 80,
+                rot: Math.round(Math.random() * 1080 - 540), size: 14 + Math.round(Math.random() * 18),
+                life: 2600 + Math.round(Math.random() * 2200), delay: Math.round(Math.random() * 900),
+                kind: pickKind(), tone: TONES[Math.floor(Math.random() * TONES.length)],
+            };
+        });
+        setBits((b) => [...b, ...made]);
+        const ids = new Set(made.map((m) => m.key));
+        setTimeout(() => setBits((b) => b.filter((p) => !ids.has(p.key))), 6000);
+    }, []);
+    const say = (t) => { setToast(t); setTimeout(() => setToast((x) => (x === t ? null : x)), 2400); };
+    /* ---------- guards ---------- */
+    if (session === undefined)
+        return React.createElement(Splash, { text: "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E01\u0E32\u0E23\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19..." });
+    if (!session)
+        return React.createElement(SignIn, null);
+    if (!db)
+        return React.createElement(Splash, { text: "\u0E01\u0E33\u0E25\u0E31\u0E07\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19..." });
+    const { users, tasks, entries, maidLog, audit, settings } = db;
+    const me = users.find((u) => u.id === who) || users[0];
+    if (!me) {
+        return (React.createElement("div", { className: "fq-root" },
+            React.createElement("div", { className: "fq-signin" },
+                React.createElement("h1", { className: "fq-title" }, "\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E14\u0E32\u0E27\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19\u0E40\u0E23\u0E32"),
+                React.createElement("p", { className: "fq-signin-sub" }, err || "ยังไม่มีสมาชิกในระบบ"),
+                React.createElement("p", { className: "fq-signin-hint" },
+                    "\u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E14\u0E49\u0E27\u0E22\u0E2D\u0E35\u0E40\u0E21\u0E25 ",
+                    session.user.email),
+                React.createElement("button", { className: "fq-ghost", onClick: () => supabase.auth.signOut() }, "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A"))));
+    }
+    /* ---------- derived ---------- */
+    const now = Date.now();
+    const w0 = startOfWeek(now), w1 = w0 - 7 * DAY, m0 = startOfMonth(now), m1 = prevMonthStart(now);
+    const sumIn = (id, from, to) => entries.filter((e) => e.user_id === id && ms(e.ts) >= from && ms(e.ts) < to)
+        .reduce((s, e) => s + num(e.stars), 0);
+    const weekStars = (id) => sumIn(id, w0, now + DAY);
+    const houseGoal = users.filter((u) => u.role !== "staff").reduce((s, u) => s + num(u.goal), 0);
+    const houseStars = users.filter((u) => u.role !== "staff").reduce((s, u) => s + weekStars(u.id), 0);
+    const kid = users.find((u) => u.role === "supervised");
+    const staff = users.find((u) => u.role === "staff");
+    const myTasks = tasks.filter((t) => t.owner === me.id);
+    const kidQueue = kid ? tasks.filter((t) => t.owner === kid.id && t.status === "pending") : [];
+    const maidTasks = staff ? tasks.filter((t) => t.owner === staff.id) : [];
+    const maidQueue = maidTasks.filter((t) => t.status === "pending");
+    const weekMaid = maidLog.filter((e) => ms(e.ts) >= w0);
+    const passedMaid = weekMaid.filter((e) => e.rating >= 3);
+    const assigned = Math.max(1, maidTasks.length * num(settings.maid_days || 3));
+    const rate = Math.round((passedMaid.length / assigned) * 100);
+    const maidStars = passedMaid.reduce((s, e) => s + num(e.base) * num(staff ? staff.mult : 1), 0);
+    const wageBase = maidStars * num(settings.wage_per_star || 80);
+    const wageBonus = passedMaid.filter((e) => e.rating === 5).length * num(settings.bonus_per_five || 50);
+    const target = num(settings.maid_target || 85);
+    const stats = (() => {
+        const cur = span === "week" ? [w0, now + DAY] : [m0, now + DAY];
+        const pre = span === "week" ? [w1, w0] : [m1, m0];
+        const rows = users.filter((u) => u.role !== "staff").map((u) => ({
+            id: u.id, name: u.name, cur: sumIn(u.id, cur[0], cur[1]), pre: sumIn(u.id, pre[0], pre[1]),
+        }));
+        const c = rows.reduce((s, r) => s + r.cur, 0);
+        const p = rows.reduce((s, r) => s + r.pre, 0);
+        return {
+            rows, total: c, prevTotal: p,
+            growth: p === 0 ? (c > 0 ? 100 : 0) : Math.round(((c - p) / p) * 100),
+            max: Math.max(1, ...rows.map((r) => Math.max(r.cur, r.pre))),
+        };
+    })();
+    if (houseGoal > 0 && houseStars >= houseGoal && !partyRef.current) {
+        partyRef.current = true;
+        setTimeout(() => { setParty(true); rain(120); }, 100);
+    }
+    if (houseStars < houseGoal)
+        partyRef.current = false;
+    /* ---------- actions ---------- */
+    const guard = (fn) => async (...args) => {
+        try {
+            await fn(...args);
+            await reload();
+        }
+        catch (e) {
+            setErr(e.message || "บันทึกไม่สำเร็จ");
+        }
+    };
+    const submitTask = guard(async (task, el) => {
+        await api.setStatus(task.id, "pending");
+        await api.logAudit(me.name, `ส่งงาน "${task.title}" รอการอนุมัติ`);
+        burst(el);
+        say("ส่งให้ผู้ดูแลตรวจแล้ว");
+    });
+    const cancelTask = guard(async (task) => {
+        await api.setStatus(task.id, "todo");
+        await api.logAudit(me.name, `ยกเลิกการส่งงาน "${task.title}"`);
+    });
+    const finishTask = guard(async (task, el) => {
+        const owner = users.find((u) => u.id === task.owner);
+        await api.setStatus(task.id, "done");
+        await api.addEntry(owner, task);
+        await api.logAudit(owner.name, `ทำงาน "${task.title}" เสร็จและรับดาวทันที (+${fmt(netStars(task.base, owner.mult))} ดาว)`);
+        burst(el);
+        say(`ได้ ${fmt(netStars(task.base, owner.mult))} ดาว`);
+    });
+    const approveTask = guard(async (task, el) => {
+        const owner = users.find((u) => u.id === task.owner);
+        const net = netStars(task.base, owner.mult);
+        await api.setStatus(task.id, "done");
+        await api.addEntry(owner, task);
+        await api.logAudit(me.name, `${me.name}อนุมัติงาน "${task.title}" ให้${owner.name} (+${fmt(net)} ดาว = ${task.base} × ${fmt(owner.mult)})`);
+        burst(el);
+        say(`อนุมัติ +${fmt(net)} ดาวให้${owner.name}`);
+    });
+    const rejectTask = guard(async (task) => {
+        await api.setStatus(task.id, "todo");
+        await api.logAudit(me.name, `ส่งงาน "${task.title}" กลับไปให้ทำใหม่`);
+    });
+    const maidSubmit = guard(async (task) => {
+        await api.setStatus(task.id, "pending");
+        await api.logAudit(me.name, `บันทึกงาน "${task.title}" รอตรวจประเมิน`);
+        say("บันทึกงานแล้ว รอตรวจประเมิน");
+    });
+    const maidUndo = guard(async (task) => {
+        await api.setStatus(task.id, "todo");
+        await api.logAudit(me.name, `ยกเลิกการบันทึกงาน "${task.title}"`);
+    });
+    const rateMaid = guard(async (task, score) => {
+        await api.setStatus(task.id, "rated");
+        await api.addMaidRating(task, score);
+        await api.updateSettings({ paid: false });
+        await api.logAudit(me.name, `${me.name}ประเมินงาน "${task.title}" ของพี่แม่บ้าน ${score} ดาว (${score >= 3 ? "ผ่าน" : "ไม่ผ่าน"})`);
+        say(score >= 3 ? `ให้ ${score} ดาว ผ่านเกณฑ์` : `ให้ ${score} ดาว ยังไม่ผ่านเกณฑ์`);
+    });
+    const togglePaid = guard(async (el) => {
+        const next = !settings.paid;
+        await api.updateSettings({ paid: next });
+        await api.logAudit(me.name, next
+            ? `บันทึกการจ่ายค่าตอบแทนแม่บ้าน ${baht(wageBase + wageBonus)} บาท`
+            : "ย้อนสถานะค่าตอบแทนเป็นรอจ่าย");
+        if (next)
+            burst(el, 12);
+    });
+    const addTask = guard(async (t) => {
+        await api.addTask(t);
+        const owner = users.find((u) => u.id === t.owner);
+        await api.logAudit(me.name, `เพิ่มภารกิจใหม่: "${t.title}" (${t.base} ดาวพื้นฐาน) ให้${owner ? owner.name : ""}`);
+        say("เพิ่มภารกิจใหม่แล้ว");
+    });
+    const removeTask = guard(async (t) => {
+        await api.deleteTask(t.id);
+        await api.logAudit(me.name, `ลบภารกิจ "${t.title}"`);
+    });
+    const addUser = guard(async (u) => {
+        await api.addUser(u);
+        await api.logAudit(me.name, `เพิ่มสมาชิกใหม่: ${u.name} (${ROLES[u.role].label}, เป้า ${u.goal} ดาว, ตัวคูณ ${u.mult}x)`);
+        say("เพิ่มสมาชิกแล้ว");
+    });
+    const saveUser = guard(async (u, patch) => {
+        await api.updateUser(u.id, patch);
+        await api.logAudit(me.name, `แก้ไขโปรไฟล์ ${patch.name}: บทบาท ${ROLES[patch.role].label}, เป้า ${patch.goal} ดาว, ตัวคูณ ${patch.mult}x${num(u.mult) !== num(patch.mult) ? ` (เดิม ${fmt(u.mult)}x)` : ""}`);
+        say("บันทึกโปรไฟล์แล้ว");
+    });
+    const removeUser = guard(async (u) => {
+        await api.deleteUser(u.id);
+        await api.logAudit(me.name, `ลบสมาชิก ${u.name} และภารกิจทั้งหมดของสมาชิกคนนี้`);
+        if (who === u.id)
+            setWho(null);
+    });
+    const savePin = guard(async (code) => {
+        await api.updateSettings({ pin: code });
+        await api.logAudit(me.name, "เปลี่ยนรหัส PIN ของผู้ดูแล");
+        say("บันทึก PIN ใหม่แล้ว");
+    });
+    const doReset = guard(async () => {
+        await api.resetWeek();
+        partyRef.current = false;
+        say("เริ่มรอบใหม่แล้ว");
+    });
+    /* ---------- profile switch ---------- */
+    const pick = (u) => {
+        setTab("mine");
+        if (ROLES[u.role].pin && unlocked !== u.id) {
+            setPin("");
+            setPinErr(false);
+            setPinFor(u.id);
+            return;
+        }
+        if (!ROLES[u.role].pin)
+            setUnlocked(null);
+        setWho(u.id);
+    };
+    const tapPin = (d) => {
+        setPinErr(false);
+        const next = (pin + d).slice(0, 4);
+        setPin(next);
+        if (next.length === 4)
+            setTimeout(async () => {
+                if (next === (settings.pin || "3103")) {
+                    const u = users.find((x) => x.id === pinFor);
+                    setUnlocked(pinFor);
+                    setWho(pinFor);
+                    setPinFor(null);
+                    setPin("");
+                    await api.logAudit(u ? u.name : "ผู้ดูแล", "ปลดล็อกโหมดผู้ดูแลด้วย PIN");
+                    reload();
+                }
+                else {
+                    setPinErr(true);
+                    setPin("");
+                }
+            }, 150);
+    };
+    const isAdmin = me.role === "admin";
+    const isStaff = me.role === "staff";
+    const mine = weekStars(me.id);
+    const left = Math.max(0, num(me.goal) - mine);
+    return (React.createElement("div", { className: "fq-root" },
+        React.createElement("div", { className: "fq-shell" },
+            React.createElement("header", { className: "fq-top" },
+                React.createElement("div", null,
+                    React.createElement("h1", { className: "fq-title" }, "\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08\u0E14\u0E32\u0E27\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19\u0E40\u0E23\u0E32"),
+                    React.createElement("p", { className: "fq-sub" },
+                        thDay(now),
+                        " \u00B7 \u0E40\u0E02\u0E49\u0E32\u0E43\u0E0A\u0E49\u0E40\u0E1B\u0E47\u0E19 ",
+                        session.user.email)),
+                React.createElement("div", { className: "fq-top-acts" },
+                    React.createElement(Users, { size: 20, strokeWidth: 2.4, className: "fq-top-ic" }),
+                    React.createElement("button", { className: "fq-signout", onClick: () => supabase.auth.signOut(), "aria-label": "\u0E2D\u0E2D\u0E01\u0E08\u0E32\u0E01\u0E23\u0E30\u0E1A\u0E1A" },
+                        React.createElement(LogOut, { size: 17, strokeWidth: 2.4 })))),
+            err && React.createElement("p", { className: "fq-warn" }, err),
+            React.createElement("section", { className: "fq-pool" },
+                React.createElement("div", { className: "fq-pool-head" },
+                    React.createElement("div", { className: "fq-count" },
+                        React.createElement(Star, { size: 32, strokeWidth: 0, fill: "#FFD028", className: "fq-count-star" }),
+                        React.createElement("span", { className: "fq-count-num" }, fmt(houseStars)),
+                        React.createElement("span", { className: "fq-count-goal" },
+                            "/ ",
+                            houseGoal)),
+                    React.createElement("p", { className: "fq-pool-msg" }, houseStars >= houseGoal ? "ครบแล้ว จัดหมูกระทะ!" : `ทั้งบ้านขาดอีก ${fmt(houseGoal - houseStars)} ดาว`)),
+                React.createElement("div", { className: "fq-track", role: "progressbar", "aria-valuenow": houseStars, "aria-valuemin": 0, "aria-valuemax": houseGoal },
+                    React.createElement("div", { className: "fq-fill", style: { width: `${Math.min(100, (houseStars / Math.max(1, houseGoal)) * 100)}%` } })),
+                React.createElement("div", { className: "fq-reward" },
+                    React.createElement(Gift, { size: 18, strokeWidth: 2.4 }),
+                    React.createElement("span", null,
+                        "\u0E04\u0E23\u0E1A ",
+                        houseGoal,
+                        " \u0E14\u0E32\u0E27\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E44\u0E2B\u0E23\u0E48 ",
+                        settings.family_reward)),
+                React.createElement("p", { className: "fq-poolnote" }, "\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E27\u0E21\u0E04\u0E34\u0E14\u0E08\u0E32\u0E01\u0E40\u0E1B\u0E49\u0E32\u0E02\u0E2D\u0E07\u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01\u0E43\u0E19\u0E1A\u0E49\u0E32\u0E19 \u0E44\u0E21\u0E48\u0E23\u0E27\u0E21\u0E07\u0E32\u0E19\u0E02\u0E2D\u0E07\u0E1E\u0E35\u0E48\u0E41\u0E21\u0E48\u0E1A\u0E49\u0E32\u0E19")),
+            React.createElement("div", { className: "fq-people", role: "tablist" }, users.map((u) => {
+                const Ic = u.role === "staff" ? Sparkles : u.role === "admin" ? (u.hue === "grape" ? Heart : ShieldCheck)
+                    : u.role === "standard" ? Armchair : Smile;
+                const locked = ROLES[u.role].pin && unlocked !== u.id;
+                return (React.createElement("button", { key: u.id, role: "tab", "aria-selected": who === u.id, className: `fq-person hue-${u.hue} ${me.id === u.id ? "on" : ""} ${u.role === "staff" ? "staff" : ""}`, onClick: () => pick(u) },
+                    React.createElement("span", { className: "fq-person-ic" },
+                        React.createElement(Ic, { size: 20, strokeWidth: 2.5 })),
+                    React.createElement("span", { className: "fq-person-name" }, u.name),
+                    React.createElement("span", { className: "fq-person-stars" },
+                        u.role === "staff" ? `ผลงาน ${rate}%` : `${fmt(weekStars(u.id))}/${u.goal} ดาว`,
+                        num(u.mult) !== 1 && u.role !== "staff" ? ` · ${fmt(u.mult)}x` : ""),
+                    locked && React.createElement(Lock, { size: 13, strokeWidth: 2.8, className: "fq-person-lock" }),
+                    ROLES[u.role].pin && (kidQueue.length + maidQueue.length) > 0 &&
+                        React.createElement("span", { className: "fq-badge" }, kidQueue.length + maidQueue.length)));
+            })),
+            isStaff ? (React.createElement("section", { className: "fq-staff" },
+                React.createElement("div", { className: "fq-staff-head" },
+                    React.createElement("div", null,
+                        React.createElement("h2", { className: "fq-staff-name" }, me.name),
+                        React.createElement("p", { className: "fq-staff-note" },
+                            me.note,
+                            " \u00B7 \u0E1A\u0E17\u0E1A\u0E32\u0E17 ",
+                            ROLES[me.role].label)),
+                    React.createElement("span", { className: "fq-staff-chip" }, "\u0E04\u0E30\u0E41\u0E19\u0E19\u0E41\u0E22\u0E01\u0E08\u0E32\u0E01\u0E01\u0E2D\u0E07\u0E23\u0E27\u0E21\u0E02\u0E2D\u0E07\u0E1A\u0E49\u0E32\u0E19")),
+                React.createElement("div", { className: "fq-gauge-row" },
+                    React.createElement(Gauge, { value: rate, target: target }),
+                    React.createElement("div", { className: "fq-gauge-info" },
+                        React.createElement("p", { className: "fq-gauge-label" }, "\u0E2D\u0E31\u0E15\u0E23\u0E32\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08\u0E1B\u0E23\u0E30\u0E08\u0E33\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C"),
+                        React.createElement("p", { className: "fq-gauge-detail" },
+                            "\u0E1C\u0E48\u0E32\u0E19\u0E40\u0E01\u0E13\u0E11\u0E4C ",
+                            passedMaid.length,
+                            " \u0E08\u0E32\u0E01 ",
+                            assigned,
+                            " \u0E07\u0E32\u0E19\u0E17\u0E35\u0E48\u0E21\u0E2D\u0E1A\u0E2B\u0E21\u0E32\u0E22"),
+                        React.createElement("p", { className: `fq-gauge-status ${rate >= target ? "ok" : "low"}` }, rate >= target
+                            ? React.createElement(React.Fragment, null,
+                                React.createElement(BadgeCheck, { size: 16, strokeWidth: 2.6 }),
+                                " \u0E16\u0E36\u0E07\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22\u0E02\u0E31\u0E49\u0E19\u0E15\u0E48\u0E33 ",
+                                target,
+                                "%")
+                            : React.createElement(React.Fragment, null,
+                                React.createElement(AlertTriangle, { size: 16, strokeWidth: 2.6 }),
+                                " \u0E15\u0E48\u0E33\u0E01\u0E27\u0E48\u0E32\u0E40\u0E1B\u0E49\u0E32 ",
+                                target,
+                                "% \u0E2D\u0E35\u0E01 ",
+                                Math.max(0, Math.ceil((target / 100) * assigned) - passedMaid.length),
+                                " \u0E07\u0E32\u0E19")))),
+                React.createElement("h3", { className: "fq-staff-h3" }, "\u0E40\u0E0A\u0E47\u0E01\u0E25\u0E34\u0E2A\u0E15\u0E4C\u0E07\u0E32\u0E19\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49"),
+                React.createElement("ul", { className: "fq-check" }, maidTasks.map((t) => {
+                    const Ic = iconOf(t.icon);
+                    return (React.createElement("li", { key: t.id, className: `fq-check-item ${t.status}` },
+                        React.createElement("button", { className: "fq-check-btn", disabled: t.status !== "todo", onClick: () => maidSubmit(t), "aria-label": `บันทึกงาน ${t.title}` }, t.status === "todo" ? React.createElement(Square, { size: 30, strokeWidth: 2.2 }) : React.createElement(SquareCheck, { size: 30, strokeWidth: 2.2 })),
+                        React.createElement("div", { className: "fq-check-body" },
+                            React.createElement("div", { className: "fq-check-line" },
+                                React.createElement(Ic, { size: 16, strokeWidth: 2.4, className: "fq-check-ic" }),
+                                React.createElement("span", { className: "fq-check-title" }, t.title),
+                                t.high && React.createElement("span", { className: "fq-flag" }, "\u0E2A\u0E33\u0E04\u0E31\u0E0D\u0E2A\u0E39\u0E07")),
+                            React.createElement("p", { className: "fq-check-where" },
+                                t.place,
+                                " \u00B7 ",
+                                t.base,
+                                " \u0E14\u0E32\u0E27\u0E07\u0E32\u0E19"),
+                            t.status === "pending" && (React.createElement("div", { className: "fq-check-state" },
+                                React.createElement(Clock, { size: 15, strokeWidth: 2.6 }),
+                                " \u0E23\u0E2D\u0E15\u0E23\u0E27\u0E08\u0E1B\u0E23\u0E30\u0E40\u0E21\u0E34\u0E19",
+                                React.createElement("button", { className: "fq-check-undo", onClick: () => maidUndo(t) },
+                                    React.createElement(Undo2, { size: 14, strokeWidth: 2.6 }),
+                                    " \u0E22\u0E01\u0E40\u0E25\u0E34\u0E01"))),
+                            t.status === "rated" && React.createElement("div", { className: "fq-check-state done" },
+                                React.createElement(CheckCheck, { size: 15, strokeWidth: 2.6 }),
+                                " \u0E15\u0E23\u0E27\u0E08\u0E1B\u0E23\u0E30\u0E40\u0E21\u0E34\u0E19\u0E41\u0E25\u0E49\u0E27"))));
+                })),
+                React.createElement("div", { className: "fq-wage plain" },
+                    React.createElement("div", { className: "fq-wage-line" },
+                        React.createElement("span", null, "\u0E14\u0E32\u0E27\u0E07\u0E32\u0E19\u0E17\u0E35\u0E48\u0E1C\u0E48\u0E32\u0E19\u0E40\u0E01\u0E13\u0E11\u0E4C"),
+                        React.createElement("span", null,
+                            fmt(maidStars),
+                            " \u0E14\u0E32\u0E27")),
+                    React.createElement("div", { className: "fq-wage-line" },
+                        React.createElement("span", null, "\u0E04\u0E48\u0E32\u0E15\u0E2D\u0E1A\u0E41\u0E17\u0E19\u0E2A\u0E30\u0E2A\u0E21"),
+                        React.createElement("span", null,
+                            baht(wageBase + wageBonus),
+                            " \u0E1A\u0E32\u0E17")),
+                    React.createElement("div", { className: "fq-wage-line" },
+                        React.createElement("span", null, "\u0E2A\u0E16\u0E32\u0E19\u0E30\u0E01\u0E32\u0E23\u0E08\u0E48\u0E32\u0E22"),
+                        React.createElement("span", { className: settings.paid ? "paid" : "pending" }, settings.paid ? "จ่ายแล้ว" : "รอจ่าย"))))) : (React.createElement("section", { className: `fq-panel hue-${me.hue} ${me.role === "standard" ? "big" : ""}` },
+                React.createElement("div", { className: "fq-panel-head" },
+                    React.createElement("div", null,
+                        React.createElement("h2", { className: "fq-panel-name" }, me.name),
+                        React.createElement("p", { className: "fq-panel-note" },
+                            me.note,
+                            " \u00B7 ",
+                            ROLES[me.role].label,
+                            " \u00B7 \u0E15\u0E31\u0E27\u0E04\u0E39\u0E13 ",
+                            fmt(me.mult),
+                            "x")),
+                    React.createElement("div", { className: "fq-panel-score" },
+                        React.createElement("span", { className: "fq-panel-num" }, fmt(mine)),
+                        React.createElement("span", { className: "fq-panel-den" },
+                            "/",
+                            me.goal))),
+                React.createElement("div", { className: "fq-mini-track" },
+                    React.createElement("div", { className: "fq-mini-fill", style: { width: `${Math.min(100, (mine / Math.max(1, num(me.goal))) * 100)}%` } })),
+                React.createElement("p", { className: "fq-panel-left" }, left === 0 ? `ครบเป้าแล้ว: ${me.reward || "รับรางวัลได้"}` : `ขาดอีก ${fmt(left)} ดาว จะได้ ${me.reward || "รางวัลประจำรอบ"}`),
+                isAdmin && (React.createElement("div", { className: "fq-tabs", role: "tablist" }, [["mine", "งานของฉัน"],
+                    ["review", `ตรวจงาน${kid ? kid.name : "เด็ก"}${kidQueue.length ? ` (${kidQueue.length})` : ""}`],
+                    ["maid", `ตรวจงานแม่บ้าน${maidQueue.length ? ` (${maidQueue.length})` : ""}`],
+                    ["stats", "แดชบอร์ดสถิติ"], ["manage", "จัดการสมาชิก"], ["audit", "ประวัติย้อนกลับ"]
+                ].map(([k, label]) => (React.createElement("button", { key: k, role: "tab", "aria-selected": tab === k, className: `fq-tab ${tab === k ? "on" : ""}`, onClick: () => setTab(k) }, label))))),
+                (!isAdmin || tab === "mine") && (React.createElement("div", { className: "fq-tasks" },
+                    myTasks.length === 0 && React.createElement("p", { className: "fq-empty" }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E20\u0E32\u0E23\u0E01\u0E34\u0E08 \u0E43\u0E2B\u0E49\u0E1C\u0E39\u0E49\u0E14\u0E39\u0E41\u0E25\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E43\u0E2B\u0E49\u0E43\u0E19\u0E41\u0E17\u0E47\u0E1A\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23\u0E2A\u0E21\u0E32\u0E0A\u0E34\u0E01"),
+                    myTasks.map((t) => (React.createElement(TaskCard, { key: t.id, task: t, user: me, onSubmit: submitTask, onCancel: cancelTask, onFinish: finishTask }))))),
+                isAdmin && tab === "review" && (React.createElement("div", { className: "fq-review" },
+                    kidQueue.length === 0 ? React.createElement("p", { className: "fq-empty" }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E07\u0E32\u0E19\u0E23\u0E2D\u0E15\u0E23\u0E27\u0E08") : (React.createElement("ul", { className: "fq-queue" }, kidQueue.map((t) => {
+                        const Ic = iconOf(t.icon);
+                        const owner = users.find((u) => u.id === t.owner);
+                        return (React.createElement("li", { key: t.id, className: "fq-row" },
+                            React.createElement("span", { className: "fq-row-ic" },
+                                React.createElement(Ic, { size: 22, strokeWidth: 2.4 })),
+                            React.createElement("span", { className: "fq-row-text" },
+                                React.createElement("span", { className: "fq-row-title" }, t.title),
+                                React.createElement("span", { className: "fq-row-sub" },
+                                    owner.name,
+                                    " \u00B7 ",
+                                    t.base,
+                                    " \u00D7 ",
+                                    fmt(owner.mult),
+                                    "x = ",
+                                    fmt(netStars(t.base, owner.mult)),
+                                    " \u0E14\u0E32\u0E27")),
+                            React.createElement("span", { className: "fq-row-acts" },
+                                React.createElement("button", { className: "fq-back", onClick: () => rejectTask(t) }, "\u0E43\u0E2B\u0E49\u0E17\u0E33\u0E43\u0E2B\u0E21\u0E48"),
+                                React.createElement("button", { className: "fq-approve", onClick: (e) => approveTask(t, e.currentTarget) },
+                                    React.createElement(Check, { size: 20, strokeWidth: 3 }),
+                                    " \u0E2D\u0E19\u0E38\u0E21\u0E31\u0E15\u0E34"))));
+                    }))),
+                    React.createElement("h3", { className: "fq-h3" }, "\u0E14\u0E32\u0E27\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E02\u0E2D\u0E07\u0E17\u0E38\u0E01\u0E04\u0E19"),
+                    React.createElement("ul", { className: "fq-history" }, entries.slice(0, 8).map((e) => (React.createElement("li", { key: e.id },
+                        React.createElement("span", { className: "fq-hist-ic" },
+                            React.createElement(CheckCheck, { size: 15, strokeWidth: 2.6 })),
+                        React.createElement("span", { className: "fq-hist-who" }, (users.find((u) => u.id === e.user_id) || {}).name || "-"),
+                        React.createElement("span", { className: "fq-hist-title" }, e.title),
+                        React.createElement("span", { className: "fq-hist-star" },
+                            "+",
+                            fmt(e.stars),
+                            React.createElement(Star, { size: 11, strokeWidth: 0, fill: "currentColor" })))))),
+                    React.createElement("button", { className: "fq-reset", onClick: doReset },
+                        React.createElement(RotateCcw, { size: 16, strokeWidth: 2.6 }),
+                        " \u0E40\u0E23\u0E34\u0E48\u0E21\u0E23\u0E2D\u0E1A\u0E43\u0E2B\u0E21\u0E48 (\u0E25\u0E49\u0E32\u0E07\u0E14\u0E32\u0E27\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14)"))),
+                isAdmin && tab === "maid" && (React.createElement("div", { className: "fq-review" },
+                    React.createElement("div", { className: "fq-ratehead" },
+                        React.createElement("span", { className: "fq-ratehead-num" },
+                            rate,
+                            "%"),
+                        React.createElement("span", { className: "fq-ratehead-txt" },
+                            "\u0E2D\u0E31\u0E15\u0E23\u0E32\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 (\u0E40\u0E1B\u0E49\u0E32 ",
+                            target,
+                            "%) \u00B7 \u0E1C\u0E48\u0E32\u0E19 ",
+                            passedMaid.length,
+                            "/",
+                            assigned,
+                            " \u0E07\u0E32\u0E19")),
+                    maidQueue.length === 0 ? React.createElement("p", { className: "fq-empty" }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E07\u0E32\u0E19\u0E02\u0E2D\u0E07\u0E1E\u0E35\u0E48\u0E41\u0E21\u0E48\u0E1A\u0E49\u0E32\u0E19\u0E23\u0E2D\u0E1B\u0E23\u0E30\u0E40\u0E21\u0E34\u0E19") : (React.createElement("ul", { className: "fq-queue" }, maidQueue.map((t) => React.createElement(RateRow, { key: t.id, task: t, onRate: rateMaid })))),
+                    React.createElement("h3", { className: "fq-h3" }, "\u0E2A\u0E23\u0E38\u0E1B\u0E04\u0E48\u0E32\u0E15\u0E2D\u0E1A\u0E41\u0E17\u0E19\u0E2A\u0E31\u0E1B\u0E14\u0E32\u0E2B\u0E4C\u0E19\u0E35\u0E49"),
+                    React.createElement("div", { className: "fq-wage" },
+                        React.createElement("div", { className: "fq-wage-line" },
+                            React.createElement("span", null, "\u0E07\u0E32\u0E19\u0E17\u0E35\u0E48\u0E1C\u0E48\u0E32\u0E19\u0E40\u0E01\u0E13\u0E11\u0E4C (3 \u0E14\u0E32\u0E27\u0E02\u0E36\u0E49\u0E19\u0E44\u0E1B)"),
+                            React.createElement("span", null,
+                                passedMaid.length,
+                                " \u0E07\u0E32\u0E19 \u00B7 ",
+                                fmt(maidStars),
+                                " \u0E14\u0E32\u0E27\u0E07\u0E32\u0E19")),
+                        React.createElement("div", { className: "fq-wage-line" },
+                            React.createElement("span", null,
+                                "\u0E04\u0E48\u0E32\u0E15\u0E2D\u0E1A\u0E41\u0E17\u0E19\u0E07\u0E32\u0E19 (",
+                                settings.wage_per_star,
+                                " \u0E1A\u0E32\u0E17/\u0E14\u0E32\u0E27\u0E07\u0E32\u0E19)"),
+                            React.createElement("span", null,
+                                baht(wageBase),
+                                " \u0E1A\u0E32\u0E17")),
+                        React.createElement("div", { className: "fq-wage-line" },
+                            React.createElement("span", null,
+                                "\u0E42\u0E1A\u0E19\u0E31\u0E2A\u0E07\u0E32\u0E19\u0E40\u0E23\u0E35\u0E22\u0E1A\u0E23\u0E49\u0E2D\u0E22 (5 \u0E14\u0E32\u0E27 \u00D7 ",
+                                settings.bonus_per_five,
+                                " \u0E1A\u0E32\u0E17)"),
+                            React.createElement("span", null,
+                                baht(wageBonus),
+                                " \u0E1A\u0E32\u0E17")),
+                        React.createElement("div", { className: "fq-wage-total" },
+                            React.createElement("span", null, "\u0E23\u0E27\u0E21\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E08\u0E48\u0E32\u0E22"),
+                            React.createElement("span", null,
+                                baht(wageBase + wageBonus),
+                                " \u0E1A\u0E32\u0E17")),
+                        React.createElement("div", { className: "fq-wage-status" },
+                            React.createElement("span", { className: `fq-pill ${settings.paid ? "paid" : "pending"}` },
+                                React.createElement(Wallet, { size: 15, strokeWidth: 2.6 }),
+                                " ",
+                                settings.paid ? "จ่ายแล้ว (Paid)" : "รอจ่าย (Pending)"),
+                            React.createElement("button", { className: `fq-pay ${settings.paid ? "undo" : ""}`, onClick: (e) => togglePaid(e.currentTarget) }, settings.paid ? "ย้อนกลับเป็นรอจ่าย" : "บันทึกว่าจ่ายแล้ว"))),
+                    React.createElement("h3", { className: "fq-h3" }, "\u0E1C\u0E25\u0E1B\u0E23\u0E30\u0E40\u0E21\u0E34\u0E19\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14"),
+                    React.createElement("ul", { className: "fq-history" }, maidLog.slice(0, 8).map((e) => (React.createElement("li", { key: e.id },
+                        React.createElement("span", { className: `fq-hist-ic ${e.rating >= 3 ? "" : "bad"}` }, e.rating >= 3 ? React.createElement(CheckCheck, { size: 15, strokeWidth: 2.6 }) : React.createElement(AlertTriangle, { size: 15, strokeWidth: 2.6 })),
+                        React.createElement("span", { className: "fq-hist-title" }, e.title),
+                        React.createElement("span", { className: "fq-hist-star" },
+                            e.rating,
+                            React.createElement(Star, { size: 11, strokeWidth: 0, fill: "currentColor" })))))))),
+                isAdmin && tab === "stats" && React.createElement(StatsTab, { span: span, setSpan: setSpan, stats: stats }),
+                isAdmin && tab === "manage" && (React.createElement(ManageTab, { users: users, tasks: tasks, settings: settings, meId: me.id, onAddTask: addTask, onRemoveTask: removeTask, onAddUser: addUser, onSaveUser: saveUser, onRemoveUser: removeUser, onSavePin: savePin })),
+                isAdmin && tab === "audit" && (React.createElement("div", { className: "fq-review" },
+                    React.createElement("h3", { className: "fq-h3", style: { marginTop: 0 } }, "\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E01\u0E32\u0E23\u0E17\u0E33\u0E07\u0E32\u0E19\u0E22\u0E49\u0E2D\u0E19\u0E01\u0E25\u0E31\u0E1A"),
+                    audit.length === 0 ? React.createElement("p", { className: "fq-empty" }, "\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34") : (React.createElement("ul", { className: "fq-audit" }, audit.map((a) => (React.createElement("li", { key: a.id },
+                        React.createElement("span", { className: "fq-audit-time" }, thDate(a.ts)),
+                        React.createElement("span", { className: "fq-audit-actor" }, a.actor),
+                        React.createElement("span", { className: "fq-audit-text" }, a.text))))))))))),
+        React.createElement(Confetti, { bits: bits }),
+        toast && React.createElement("div", { className: "fq-toast", role: "status" },
+            React.createElement(Smile, { size: 18, strokeWidth: 2.6 }),
+            toast),
+        pinFor && (React.createElement(PinPad, { name: (users.find((u) => u.id === pinFor) || {}).name, pin: pin, error: pinErr, onDigit: tapPin, onBack: () => { setPin((p) => p.slice(0, -1)); setPinErr(false); }, onClose: () => setPinFor(null) })),
+        party && (React.createElement("div", { className: "fq-modal", role: "dialog" },
+            React.createElement("div", { className: "fq-party-card" },
+                React.createElement(PartyPopper, { size: 48, strokeWidth: 2.2, className: "fq-party-ic" }),
+                React.createElement("p", { className: "fq-party-title" },
+                    "\u0E04\u0E23\u0E1A ",
+                    houseGoal,
+                    " \u0E14\u0E32\u0E27\u0E17\u0E31\u0E49\u0E07\u0E1A\u0E49\u0E32\u0E19!"),
+                React.createElement("p", { className: "fq-party-body" },
+                    "\u0E17\u0E38\u0E01\u0E04\u0E19\u0E0A\u0E48\u0E27\u0E22\u0E01\u0E31\u0E19\u0E08\u0E19\u0E04\u0E23\u0E1A\u0E40\u0E1B\u0E49\u0E32\u0E2B\u0E21\u0E32\u0E22\u0E23\u0E27\u0E21\u0E02\u0E2D\u0E07\u0E23\u0E2D\u0E1A\u0E19\u0E35\u0E49 \u0E16\u0E36\u0E07\u0E40\u0E27\u0E25\u0E32",
+                    settings.family_reward),
+                React.createElement("button", { className: "fq-party-btn", onClick: (e) => { setParty(false); burst(e.currentTarget, 26); } }, "\u0E40\u0E22\u0E49!"))))));
 }
-
 function Splash({ text }) {
-  return (
-    <div className="fq-root">
-      <div className="fq-loading"><Sparkles size={28} strokeWidth={2.4} /> {text}</div>
-    </div>
-  );
+    return (React.createElement("div", { className: "fq-root" },
+        React.createElement("div", { className: "fq-loading" },
+            React.createElement(Sparkles, { size: 28, strokeWidth: 2.4 }),
+            " ",
+            text)));
 }
-
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(React.createElement(App, null));
 
 </script>
 </body>
